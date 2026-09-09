@@ -1,0 +1,412 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; color: #333; margin: 0; padding: 20px; }
+        .dash-container { max-width: 1200px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .kpi-title { font-size: 14px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-top: 15px; }
+        .kpi-val { font-size: 26px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background: #2c3e50; color: white; }
+        td:nth-child(1), td:nth-child(2) { text-align: left; }
+        
+        .tag-AAA { background: #ffcccc; color: #c0392b; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+        .tag-AA { background: #ffeaa7; color: #d35400; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+        .tag-A { background: #dff9fb; color: #2980b9; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+        .tag-B { background: #ecf0f1; color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+
+        .cat-box { flex: 1; text-align: center; background: #f8f9fa; padding: 10px 5px; border-radius: 8px; border: 1px solid #e0e6ed; cursor: pointer; transition: all 0.2s ease; }
+        .cat-box:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .cat-box.active { border: 2px solid #2980b9; background: #eaf2f8; }
+
+        .status-ok { color: #2980b9; font-weight: bold; }
+        .status-low { color: #c0392b; font-weight: bold; }
+        .status-high { color: #27ae60; font-weight: bold; }
+        .status-pend { color: #95a5a6; font-style: italic; }
+
+        .total-row td { background-color: #f8f9fa !important; color: #2c3e50; font-weight: bold; font-size: 15px; border-top: 2px solid #34495e; }
+        .progress-bg { background-color: #ecf0f1; border-radius: 5px; height: 10px; width: 100%; margin-top: 8px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .progress-fill { background-color: #27ae60; height: 100%; transition: width 0.5s ease; }
+        .controls { display: flex; justify-content: center; margin-bottom: 20px; gap: 20px; align-items: center; flex-wrap: wrap; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .filter-group { display: flex; align-items: center; gap: 10px; }
+        select { padding: 10px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="dash-container">
+        <h2 style="text-align: center; color: #2c3e50; margin-bottom: 25px;">🎯 Dashboard Proyecciones FutFem AP26</h2>
+
+        <div class="controls">
+            <div class="filter-group">
+                <label><strong>Filtro Jornada:</strong></label>
+                <select id="jornadaSelect">
+                    <option value="Todas">Todas (Acumulado)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label><strong>Filtro Local:</strong></label>
+                <select id="equipoSelect">
+                    <option value="Todos">Todos los Equipos</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card" style="display: flex; flex-direction: column;">
+                <div class="kpi-title" style="margin-top: 0;">Partidos Totales / Jugados</div>
+                <div class="kpi-val" id="kpiCount" style="color: #8e44ad; margin-bottom: 5px;">0 / 0</div>
+
+                <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 15px;">
+                    <div class="cat-box" id="box-AAA" onclick="toggleCat('AAA')">
+                        <div class="tag-AAA" style="display: inline-block; margin-bottom: 3px;">AAA</div>
+                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAAA">0 / 0</div>
+                    </div>
+                    <div class="cat-box" id="box-AA" onclick="toggleCat('AA')">
+                        <div class="tag-AA" style="display: inline-block; margin-bottom: 3px;">AA</div>
+                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAA">0 / 0</div>
+                    </div>
+                    <div class="cat-box" id="box-A" onclick="toggleCat('A')">
+                        <div class="tag-A" style="display: inline-block; margin-bottom: 3px;">A</div>
+                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiA">0 / 0</div>
+                    </div>
+                    <div class="cat-box" id="box-B" onclick="toggleCat('B')">
+                        <div class="tag-B" style="display: inline-block; margin-bottom: 3px;">B</div>
+                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiB">0 / 0</div>
+                    </div>
+                </div>
+
+                <div class="kpi-title">Views Reales (Acumulado)</div>
+                <div class="kpi-val" id="kpiRealTotal" style="color: #e67e22; font-size: 22px;">0</div>
+
+                <div class="kpi-title">Views Proyectados (Torneo)</div>
+                <div class="kpi-val" id="kpiProyTotal" style="color: #2980b9; font-size: 22px;">0</div>
+
+                <div class="kpi-title">Views Faltantes (Meta)</div>
+                <div class="kpi-val" id="kpiFaltantes" style="color: #c0392b; font-size: 22px;">0</div>
+
+                <div class="kpi-title">Rango Central (50%)</div>
+                <div class="kpi-val" id="kpiRango" style="color: #7f8c8d; font-size: 18px;">0 - 0</div>
+            </div>
+
+            <div class="card">
+                <canvas id="viewsChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 0;">
+            <h3 style="margin-top:0; color: #2c3e50;">📊 Rendimiento Acumulado por Equipo (Real vs Proyectado)</h3>
+            <table class="hover-table">
+                <thead>
+                    <tr>
+                        <th>Equipo Local</th>
+                        <th>Partidos Jugados</th>
+                        <th>Proyección Total</th>
+                        <th>Views Reales</th>
+                        <th>Diferencia (Views)</th>
+                        <th>% Cumplimiento (Semáforo)</th>
+                    </tr>
+                </thead>
+                <tbody id="teamPerformanceTable"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; color: #2c3e50;">📅 Desglose por Partido</h3>
+            <table class="hover-table">
+                <thead>
+                    <tr>
+                        <th>Jornada</th>
+                        <th>Local</th>
+                        <th>Visitante</th>
+                        <th>Cat.</th>
+                        <th>Proyección</th>
+                        <th>Rango Central (50%)</th>
+                        <th>Views Reales</th>
+                        <th>Estatus</th>
+                    </tr>
+                </thead>
+                <tbody id="matchesTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const datos = [{"Jornada": "1", "Local": "Cruz Azul", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 184333, "P25": 118433, "P75": 248601, "Views_Reales": 181294}, {"Jornada": "1", "Local": "Pumas", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 183240, "P25": 117240, "P75": 247044, "Views_Reales": 397744}, {"Jornada": "1", "Local": "Atlante", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 191780, "P25": 126315, "P75": 256154, "Views_Reales": 226529}, {"Jornada": "2", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 400122, "P25": 323329, "P75": 477149, "Views_Reales": 536016}, {"Jornada": "2", "Local": "Rayadas", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 356650, "P25": 280287, "P75": 433054, "Views_Reales": 168978}, {"Jornada": "2", "Local": "Puebla", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 401792, "P25": 326599, "P75": 476537, "Views_Reales": 219779}, {"Jornada": "2", "Local": "Toluca", "Visitante": "Juarez", "Categoria": "AA", "Proyeccion_Views": 190247, "P25": 112939, "P75": 262674, "Views_Reales": 195329}, {"Jornada": "3", "Local": "Cruz Azul", "Visitante": "Atlante", "Categoria": "A", "Proyeccion_Views": 188587, "P25": 123103, "P75": 253210, "Views_Reales": 264923}, {"Jornada": "3", "Local": "Am\u00e9rica", "Visitante": "Puebla", "Categoria": "AA", "Proyeccion_Views": 333392, "P25": 269094, "P75": 398262, "Views_Reales": 556943}, {"Jornada": "3", "Local": "Toluca", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 190636, "P25": 125586, "P75": 255897, "Views_Reales": 169556}, {"Jornada": "4", "Local": "Pumas", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 168914, "P25": 111249, "P75": 224674, "Views_Reales": 134191}, {"Jornada": "4", "Local": "Rayadas", "Visitante": "Le\u00f3n", "Categoria": "AA", "Proyeccion_Views": 312288, "P25": 256227, "P75": 368817, "Views_Reales": 172559}, {"Jornada": "4", "Local": "Cruz Azul", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 337621, "P25": 280412, "P75": 393880, "Views_Reales": 258737}, {"Jornada": "4", "Local": "Puebla", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 171241, "P25": 112970, "P75": 227265, "Views_Reales": 105998}, {"Jornada": "4", "Local": "Atlante", "Visitante": "Toluca", "Categoria": "A", "Proyeccion_Views": 171308, "P25": 113315, "P75": 228457, "Views_Reales": 178113}, {"Jornada": "5", "Local": "Toluca", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 174536, "P25": 117507, "P75": 229953, "Views_Reales": 271120}, {"Jornada": "5", "Local": "Puebla", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 203050, "P25": 146879, "P75": 259452, "Views_Reales": 133376}, {"Jornada": "5", "Local": "Am\u00e9rica", "Visitante": "Xolos", "Categoria": "AA", "Proyeccion_Views": 319313, "P25": 268758, "P75": 370468, "Views_Reales": 528261}, {"Jornada": "5", "Local": "San Luis", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 172881, "P25": 121163, "P75": 222427, "Views_Reales": 122879}, {"Jornada": "6", "Local": "Pumas", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 325595, "P25": 273808, "P75": 377585, "Views_Reales": 534470}, {"Jornada": "6", "Local": "Rayadas", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 310613, "P25": 259121, "P75": 361280, "Views_Reales": 194587}, {"Jornada": "6", "Local": "Atlante", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 185556, "P25": 135547, "P75": 236159, "Views_Reales": 131252}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 176451, "P25": 155231, "P75": 197741, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Queretaro", "Categoria": "B", "Proyeccion_Views": 143293, "P25": 120167, "P75": 166034, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Tigres", "Categoria": "AAA", "Proyeccion_Views": 626609, "P25": 522496, "P75": 729741, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 175504, "P25": 154155, "P75": 196585, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 172799, "P25": 151685, "P75": 194116, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Necaxa", "Categoria": "A", "Proyeccion_Views": 236065, "P25": 214974, "P75": 257246, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Puebla", "Categoria": "A", "Proyeccion_Views": 245556, "P25": 224327, "P75": 266959, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlas", "Categoria": "AA", "Proyeccion_Views": 513950, "P25": 463132, "P75": 564283, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Pachuca", "Categoria": "A", "Proyeccion_Views": 175129, "P25": 153699, "P75": 196371, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 206683, "P25": 185205, "P75": 227797, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 341880, "P25": 291426, "P75": 391158, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 359397, "P25": 308926, "P75": 408783, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Rayadas", "Categoria": "AA", "Proyeccion_Views": 157966, "P25": 107743, "P75": 205280, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 206389, "P25": 184726, "P75": 227321, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 304917, "P25": 255407, "P75": 355208, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Am\u00e9rica", "Categoria": "AAA", "Proyeccion_Views": 346502, "P25": 242679, "P75": 445099, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 143052, "P25": 121810, "P75": 164502, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 235832, "P25": 186824, "P75": 285035, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 245457, "P25": 224128, "P75": 266654, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 175167, "P25": 153975, "P75": 196624, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Pachuca", "Categoria": "AAA", "Proyeccion_Views": 626991, "P25": 523030, "P75": 730372, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 173033, "P25": 152136, "P75": 194202, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 358608, "P25": 309987, "P75": 407507, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 315312, "P25": 265616, "P75": 364463, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 228874, "P25": 179327, "P75": 277685, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 340429, "P25": 289798, "P75": 390399, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Pumas", "Categoria": "AA", "Proyeccion_Views": 234810, "P25": 184592, "P75": 284980, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 142792, "P25": 122039, "P75": 163899, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 512716, "P25": 462010, "P75": 563001, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 229426, "P25": 179240, "P75": 280153, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 245072, "P25": 223685, "P75": 266056, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 176483, "P25": 155176, "P75": 197869, "Views_Reales": null}];
+        const formatNum = (num) => new Intl.NumberFormat('es-MX').format(Math.round(num));
+        let activeCat = null;
+
+        const jornadas = [...new Set(datos.map(d => d.Jornada))];
+        jornadas.sort((a, b) => {
+            const numA = parseInt(String(a).replace(/\D/g, ''));
+            const numB = parseInt(String(b).replace(/\D/g, ''));
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return String(a).localeCompare(String(b));
+        });
+
+        const selectJornada = document.getElementById('jornadaSelect');
+        jornadas.forEach(j => {
+            let opt = document.createElement('option');
+            opt.value = j;
+            opt.textContent = j;
+            selectJornada.appendChild(opt);
+        });
+
+        const equipos = [...new Set(datos.map(d => d.Local))].sort();
+        const selectEquipo = document.getElementById('equipoSelect');
+        equipos.forEach(eq => {
+            let opt = document.createElement('option');
+            opt.value = eq;
+            opt.textContent = eq;
+            selectEquipo.appendChild(opt);
+        });
+
+        let chart;
+
+        function getTagClass(cat) {
+            if(cat === 'AAA') return 'tag-AAA';
+            if(cat === 'AA') return 'tag-AA';
+            if(cat === 'A') return 'tag-A';
+            return 'tag-B';
+        }
+
+        function getStatus(d) {
+            if (d.Views_Reales === null) return `<span class="status-pend">⏳ Pendiente</span>`;
+            if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Déficit (< P25)</span>`;
+            if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Superávit (> P75)</span>`;
+            return `<span class="status-ok">🔵 En Rango Core</span>`;
+        }
+
+        window.toggleCat = function(cat) {
+            activeCat = (activeCat === cat) ? null : cat;
+            ['AAA', 'AA', 'A', 'B'].forEach(c => {
+                const box = document.getElementById('box-' + c);
+                if (activeCat === c) {
+                    box.classList.add('active');
+                } else {
+                    box.classList.remove('active');
+                }
+            });
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const jorVal = selectJornada.value;
+            const eqVal = selectEquipo.value;
+
+            let baseData = datos;
+
+            if (jorVal !== "Todas") {
+                baseData = baseData.filter(d => d.Jornada == jorVal);
+            }
+
+            if (eqVal !== "Todos") {
+                baseData = baseData.filter(d => d.Local === eqVal);
+            }
+
+            const playedMatches = baseData.filter(d => d.Views_Reales !== null);
+
+            let totalReales = 0;
+            let sumProyectados = 0;
+            let sumP25 = 0;
+            let sumP75 = 0;
+
+            playedMatches.forEach(d => { totalReales += d.Views_Reales; });
+
+            baseData.forEach(d => {
+                sumProyectados += d.Proyeccion_Views;
+                sumP25 += d.P25;
+                sumP75 += d.P75;
+            });
+
+            const viewsFaltantes = sumProyectados - totalReales;
+            const pctTotal = sumProyectados > 0 ? Math.min((totalReales / sumProyectados) * 100, 100).toFixed(1) : 0;
+
+            const totalAAA = baseData.filter(d => d.Categoria === 'AAA').length;
+            const playedAAA = playedMatches.filter(d => d.Categoria === 'AAA').length;
+            const totalAA = baseData.filter(d => d.Categoria === 'AA').length;
+            const playedAA = playedMatches.filter(d => d.Categoria === 'AA').length;
+            const totalA = baseData.filter(d => d.Categoria === 'A').length;
+            const playedA = playedMatches.filter(d => d.Categoria === 'A').length;
+            const totalB = baseData.filter(d => d.Categoria === 'B').length;
+            const playedB = playedMatches.filter(d => d.Categoria === 'B').length;
+
+            document.getElementById('kpiCount').innerHTML = `${baseData.length} / ${playedMatches.length}`;
+            document.getElementById('kpiAAA').innerHTML = `${playedAAA} / ${totalAAA}`;
+            document.getElementById('kpiAA').innerHTML = `${playedAA} / ${totalAA}`;
+            document.getElementById('kpiA').innerHTML = `${playedA} / ${totalA}`;
+            document.getElementById('kpiB').innerHTML = `${playedB} / ${totalB}`;
+
+            const realHtml = `
+                ${formatNum(totalReales)} <span style="font-size:14px; color:#7f8c8d; font-weight:normal;">(${pctTotal}%)</span>
+                <div class="progress-bg"><div class="progress-fill" style="width: ${pctTotal}%;"></div></div>
+            `;
+            document.getElementById('kpiRealTotal').innerHTML = realHtml;
+            document.getElementById('kpiProyTotal').innerHTML = formatNum(sumProyectados);
+            document.getElementById('kpiFaltantes').innerHTML = formatNum(viewsFaltantes > 0 ? viewsFaltantes : 0);
+            document.getElementById('kpiRango').innerHTML = `${formatNum(sumP25)} - ${formatNum(sumP75)}`;
+
+            let displayData = activeCat ? baseData.filter(d => d.Categoria === activeCat) : baseData;
+
+            const teamAgg = {};
+            const playedDisplayMatches = displayData.filter(d => d.Views_Reales !== null);
+            
+            playedDisplayMatches.forEach(d => {
+                if (!teamAgg[d.Local]) {
+                    teamAgg[d.Local] = { played: 0, proy: 0, real: 0 };
+                }
+                teamAgg[d.Local].played += 1;
+                teamAgg[d.Local].proy += d.Proyeccion_Views;
+                teamAgg[d.Local].real += d.Views_Reales;
+            });
+
+            const teamStats = Object.keys(teamAgg).map(team => {
+                const stats = teamAgg[team];
+                const diff = stats.real - stats.proy;
+                const pct = stats.proy > 0 ? ((stats.real / stats.proy) * 100).toFixed(1) : 0;
+                return { team, ...stats, diff, pct };
+            });
+
+            teamStats.sort((a, b) => b.diff - a.diff);
+
+            const tbodyTeam = document.getElementById('teamPerformanceTable');
+            if (teamStats.length === 0) {
+                tbodyTeam.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#95a5a6; font-style:italic;">Aún no hay partidos jugados bajo estos filtros.</td></tr>`;
+            } else {
+                tbodyTeam.innerHTML = teamStats.map(t => {
+                    
+                    let statusColor = '#e74c3c'; // Rojo 
+                    let emoji = '🔴';
+                    if (t.pct >= 95) {
+                        statusColor = '#27ae60'; // Verde
+                        emoji = '🟢';
+                    } else if (t.pct >= 80) {
+                        statusColor = '#f39c12'; // Amarillo
+                        emoji = '🟡';
+                    }
+
+                    const diffSign = t.diff >= 0 ? '+' : '';
+                    return `
+                        <tr>
+                            <td><strong>${t.team}</strong></td>
+                            <td>${t.played}</td>
+                            <td>${formatNum(t.proy)}</td>
+                            <td><strong style="color: #2c3e50;">${formatNum(t.real)}</strong></td>
+                            <td style="color:${statusColor}; font-weight:bold;">${diffSign}${formatNum(t.diff)}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                    <span style="color:${statusColor}; font-weight:bold; width: 65px;">${emoji} ${t.pct}%</span>
+                                    <div style="background-color:#ecf0f1; border-radius:3px; height:8px; width:80px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);">
+                                        <div style="background-color:${statusColor}; height:100%; width:${Math.min(t.pct, 100)}%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            let tableSumProyectados = 0;
+            let tableSumP25 = 0;
+            let tableSumP75 = 0;
+            let tableTotalReales = 0;
+
+            displayData.forEach(d => {
+                tableSumProyectados += d.Proyeccion_Views;
+                tableSumP25 += d.P25;
+                tableSumP75 += d.P75;
+                if (d.Views_Reales !== null) tableTotalReales += d.Views_Reales;
+            });
+
+            const tbody = document.getElementById('matchesTable');
+            let rowsHtml = displayData.map(d => `
+                <tr>
+                    <td>${d.Jornada}</td>
+                    <td><strong>${d.Local}</strong></td>
+                    <td>${d.Visitante}</td>
+                    <td><span class="${getTagClass(d.Categoria)}">${d.Categoria}</span></td>
+                    <td style="color:#2980b9; font-weight:bold;">${formatNum(d.Proyeccion_Views)}</td>
+                    <td style="color: #7f8c8d; font-size: 13px;">${formatNum(d.P25)} - ${formatNum(d.P75)}</td>
+                    <td style="font-weight:bold; color: #2c3e50;">${d.Views_Reales !== null ? formatNum(d.Views_Reales) : '-'}</td>
+                    <td>${getStatus(d)}</td>
+                </tr>
+            `).join('');
+
+            rowsHtml += `
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right; padding-right: 15px;">TOTAL EN PANTALLA:</td>
+                    <td></td>
+                    <td>${formatNum(tableSumProyectados)}</td>
+                    <td>${formatNum(tableSumP25)} - ${formatNum(tableSumP75)}</td>
+                    <td>${formatNum(tableTotalReales)}</td>
+                    <td>-</td>
+                </tr>
+            `;
+            tbody.innerHTML = rowsHtml;
+
+            if (chart) chart.destroy();
+            const ctx = document.getElementById('viewsChart').getContext('2d');
+
+            const labels = displayData.map(d => d.Local.substring(0,3) + " v " + d.Visitante.substring(0,3));
+            const rangeData = displayData.map(d => [d.P25, d.P75]);
+            const proyData = displayData.map(d => d.Proyeccion_Views);
+            const realData = displayData.map(d => d.Views_Reales);
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Views Reales',
+                            data: realData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: '#e74c3c',
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            showLine: false,
+                            order: 1
+                        },
+                        {
+                            type: 'line',
+                            label: 'Proyección',
+                            data: proyData,
+                            borderColor: '#2980b9',
+                            backgroundColor: '#2980b9',
+                            pointStyle: 'rectRot',
+                            pointRadius: 5,
+                            showLine: false,
+                            order: 2
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Rango Central (50%)',
+                            data: rangeData,
+                            backgroundColor: 'rgba(189, 195, 199, 0.4)',
+                            borderColor: 'rgba(149, 165, 166, 0.5)',
+                            borderWidth: 1,
+                            order: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        selectJornada.addEventListener('change', updateDashboard);
+        selectEquipo.addEventListener('change', updateDashboard);
+        updateDashboard();
+    </script>
+</body>
+</html>
