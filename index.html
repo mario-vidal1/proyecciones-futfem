@@ -178,9 +178,9 @@
 
         function getStatus(d) {
             if (d.Views_Reales === null) return `<span class="status-pend">⏳ Pendiente</span>`;
-            if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Déficit (< P25)</span>`;
-            if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Superávit (> P75)</span>`;
-            return `<span class="status-ok">🔵 En Rango Core</span>`;
+            if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Corto </span>`;
+            if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Arriba </span>`;
+            return `<span class="status-ok">🔵 En Rango </span>`;
         }
 
         window.toggleCat = function(cat) {
