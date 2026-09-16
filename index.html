@@ -116,17 +116,37 @@
             </table>
         </div>
 
-        <!-- EXPLICACIÓN DEL MODELO QUANT -->
-        <div class="card" style="background: #ffffff; border-left: 5px solid #2980b9;">
-            <h3 style="margin-top:0; color: #2c3e50;">🧠 Metodología del Modelo Predictivo (Quant 360°)</h3>
-            <p style="color: #7f8c8d; font-size: 14px;">Este dashboard funciona mediante un motor de Inteligencia Artificial que procesa y proyecta las audiencias utilizando las siguientes capas matemáticas:</p>
-            <ul class="metodologia-lista">
-                <li><strong>1. Modelo Random Forest Regressor:</strong> Se entrena un bosque aleatorio con los torneos históricos, filtrando el 2% de los picos extremos (outliers) y ordenando cronológicamente para evitar cualquier fuga de datos del futuro al pasado (<em>Data Leakage</em>). Se evalúan los residuales usando datos Out-Of-Bag (OOB).</li>
-                <li><strong>2. Peso Ordinal de Camiseta:</strong> El algoritmo identifica los "Súper Clásicos". Asigna un peso matemático aditivo (0, 1 o 2) si hay equipos de alta jerarquía comercial en la cancha, evitando tratar un clásico nacional igual que un partido regular.</li>
-                <li><strong>3. Contracción a la Media (Shrinkage):</strong> Si un equipo no tiene suficiente historia como local en una categoría específica, su proyección se "suaviza" promediándola con el rendimiento global de la Liga en esa categoría. Esto previene proyecciones infladas por partidos atípicos.</li>
-                <li><strong>4. Simulación Monte Carlo Truncada:</strong> Para cada partido futuro, se realizan 10,000 iteraciones utilizando la desviación estándar de los residuales. La distribución asegura que no existan proyecciones negativas y nos entrega la <em>campana de Gauss</em>, definiendo el Rango Central de Confianza (Probabilidad del 50% entre P25 y P75).</li>
-            </ul>
-        </div>
+        <!-- EXPLICACIÓN DEL MODELO QUANT (DESPLEGABLE) -->
+        <details class="card" style="background: #ffffff; border-left: 5px solid #2980b9; cursor: pointer;">
+            <summary style="font-size: 18px; font-weight: bold; color: #2c3e50; outline: none; display: flex; align-items: center; gap: 10px;">
+                <span>🧠</span> Haz clic aquí para entender la Metodología del Modelo (Quant 360°)
+            </summary>
+            
+            <div style="margin-top: 15px; color: #34495e; font-size: 14px; line-height: 1.6; border-top: 1px solid #ecf0f1; padding-top: 15px; cursor: default;">
+                <p>Este dashboard no utiliza promedios simples. Funciona mediante un motor de Inteligencia Artificial y simulaciones estocásticas que procesan el historial del torneo paso a paso:</p>
+                
+                <ol style="padding-left: 20px;">
+                    <li style="margin-bottom: 12px;">
+                        <strong>Limpieza Estricta y Orden Cronológico:</strong> El sistema agrupa transmisiones simultáneas para evitar duplicados. Se aplica un filtro del <strong>Cuantil 98%</strong> para descartar picos virales extremos (outliers) que podrían desfasar al modelo. Todo el historial se procesa en orden temporal para hacer un <em>train/test</em> evitando la fuga de datos.
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>Ingeniería de Variables:</strong> El modelo respeta las categorías de transmisión (AAA, AA, A, B) como base predictiva, pero añade una capa matemática detectando la presencia de equipos importantes en la cancha (sumando 0, 1 o 2). Esto le enseña al algoritmo a afinar la proyección y diferenciar un partido regular de un partido de alto perfil dentro de la misma categoría.
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>Entrenamiento de Inteligencia Artificial (Random Forest):</strong> Un ensamble de 1,000 árboles de decisión aprende las relaciones no lineales entre impresiones, interacciones, jerarquía de los equipos y fases finales (Liguilla). El margen de error se calcula utilizando métricas <strong>Out-Of-Bag (OOB)</strong>, es decir, el modelo se evalúa a sí mismo usando únicamente partidos que "no vio" durante su entrenamiento, garantizando un margen de error 100% realista.
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>Control de Riesgo (Shrinkage a la Media):</strong> Si un equipo no tiene suficiente historial jugando como local en una categoría específica, el sistema no adivina ni usa picos atípicos. En su lugar, aplica una técnica quant llamada <em>Shrinkage</em>, promediando el rendimiento histórico del equipo con el rendimiento global de toda la Liga en esa categoría. Esto estabiliza las proyecciones para equipos con pocos datos.
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>Simulación Monte Carlo (10,000 Iteraciones):</strong> El modelo no arroja un solo número estático. Utilizando la predicción base y el margen de error OOB, se simulan 10,000 escenarios posibles por cada partido usando una <em>Distribución Normal Truncada</em> (que impide matemáticamente que existan views negativos).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>Rango de Confianza y Campana Visual:</strong> De las simulaciones se extrae la predicción central y el <strong>Rango Central (P25 - P75)</strong>, aislando el 50% de probabilidad más certera. La <em>Campana de Gauss</em> en la tabla dibuja este horizonte: el centro representa el cumplimiento exacto (100%) de la proyección, y la esfera de color muestra el posicionamiento porcentual del rendimiento real respecto a nuestra meta matemática.
+                    </li>
+                </ol>
+            </div>
+        </details>
 
     </div>
 
