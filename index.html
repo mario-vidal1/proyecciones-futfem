@@ -12,7 +12,7 @@
         .kpi-title { font-size: 14px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-top: 15px; }
         .kpi-val { font-size: 26px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #eee; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #2c3e50; color: white; }
         td:nth-child(1), td:nth-child(2) { text-align: left; }
         .tag-AAA { background: #ffcccc; color: #c0392b; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
@@ -32,11 +32,14 @@
         .controls { display: flex; justify-content: center; margin-bottom: 20px; gap: 20px; align-items: center; flex-wrap: wrap; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .filter-group { display: flex; align-items: center; gap: 10px; }
         select { padding: 10px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
+        .metodologia-lista li { margin-bottom: 10px; line-height: 1.5; color: #34495e; }
     </style>
 </head>
 <body>
     <div class="dash-container">
         <h2 style="text-align: center; color: #2c3e50; margin-bottom: 25px;">🎯 Dashboard Proyecciones FutFem AP26</h2>
+        
+        <!-- CONTROLES -->
         <div class="controls">
             <div class="filter-group">
                 <label><strong>Filtro Jornada:</strong></label>
@@ -47,6 +50,8 @@
                 <select id="equipoSelect"><option value="Todos">Todos los Equipos</option></select>
             </div>
         </div>
+        
+        <!-- KPIs SUPERIORES -->
         <div class="grid">
             <div class="card" style="display: flex; flex-direction: column;">
                 <div class="kpi-title" style="margin-top: 0;">Partidos Totales / Jugados</div>
@@ -80,15 +85,27 @@
             </div>
             <div class="card"><canvas id="viewsChart" height="100"></canvas></div>
         </div>
+        
+        <!-- TABLA DE RENDIMIENTO POR EQUIPO -->
         <div class="card" style="margin-top: 0;">
             <h3 style="margin-top:0; color: #2c3e50;">📊 Rendimiento Acumulado por Equipo</h3>
             <table class="hover-table">
                 <thead>
-                    <tr><th>Equipo Local</th><th>Partidos Jugados</th><th>Proyección Total</th><th>Views Reales</th><th>Diferencia (Views)</th><th>% Cumplimiento</th></tr>
+                    <tr>
+                        <th>Equipo Local</th>
+                        <th>Partidos Jugados</th>
+                        <th>Proyección Total</th>
+                        <th>Views Reales</th>
+                        <th>Diferencia (Views)</th>
+                        <th>% Cumplimiento</th>
+                        <th>Curva de Rendimiento</th>
+                    </tr>
                 </thead>
                 <tbody id="teamPerformanceTable"></tbody>
             </table>
         </div>
+        
+        <!-- TABLA DE DESGLOSE POR PARTIDO -->
         <div class="card">
             <h3 style="margin-top:0; color: #2c3e50;">📅 Desglose por Partido</h3>
             <table class="hover-table">
@@ -98,9 +115,23 @@
                 <tbody id="matchesTable"></tbody>
             </table>
         </div>
+
+        <!-- EXPLICACIÓN DEL MODELO QUANT -->
+        <div class="card" style="background: #ffffff; border-left: 5px solid #2980b9;">
+            <h3 style="margin-top:0; color: #2c3e50;">🧠 Metodología del Modelo Predictivo (Quant 360°)</h3>
+            <p style="color: #7f8c8d; font-size: 14px;">Este dashboard funciona mediante un motor de Inteligencia Artificial que procesa y proyecta las audiencias utilizando las siguientes capas matemáticas:</p>
+            <ul class="metodologia-lista">
+                <li><strong>1. Modelo Random Forest Regressor:</strong> Se entrena un bosque aleatorio con los torneos históricos, filtrando el 2% de los picos extremos (outliers) y ordenando cronológicamente para evitar cualquier fuga de datos del futuro al pasado (<em>Data Leakage</em>).</li>
+                <li><strong>2. Peso Ordinal de Camiseta:</strong> El algoritmo identifica los "Súper Clásicos". Asigna un peso matemático aditivo (0, 1 o 2) si hay equipos de alta jerarquía comercial en la cancha, evitando tratar un clásico nacional igual que un partido regular.</li>
+                <li><strong>3. Contracción a la Media (Shrinkage):</strong> Si un equipo no tiene suficiente historia como local en una categoría específica, su proyección se "suaviza" promediándola con el rendimiento global de la Liga en esa categoría. Esto previene proyecciones infladas por partidos atípicos.</li>
+                <li><strong>4. Simulación Monte Carlo Truncada:</strong> Para cada partido futuro, se realizan 10,000 iteraciones utilizando la desviación estándar de los residuales. La distribución asegura que no existan proyecciones negativas y nos entrega la <em>campana de Gauss</em>, definiendo el Rango Central de Confianza (Probabilidad del 50% entre P25 y P75).</li>
+            </ul>
+        </div>
+
     </div>
+
     <script>
-        const datos = [{"Jornada": "1", "Local": "Cruz Azul", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 184333, "P25": 118433, "P75": 248601, "Views_Reales": 181294}, {"Jornada": "1", "Local": "Pumas", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 183240, "P25": 117240, "P75": 247044, "Views_Reales": 397744}, {"Jornada": "1", "Local": "Atlante", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 191780, "P25": 126315, "P75": 256154, "Views_Reales": 226529}, {"Jornada": "2", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 400122, "P25": 323329, "P75": 477149, "Views_Reales": 536016}, {"Jornada": "2", "Local": "Rayadas", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 356650, "P25": 280287, "P75": 433054, "Views_Reales": 168978}, {"Jornada": "2", "Local": "Puebla", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 401792, "P25": 326599, "P75": 476537, "Views_Reales": 219779}, {"Jornada": "2", "Local": "Toluca", "Visitante": "Juarez", "Categoria": "AA", "Proyeccion_Views": 190247, "P25": 112939, "P75": 262674, "Views_Reales": 195329}, {"Jornada": "3", "Local": "Cruz Azul", "Visitante": "Atlante", "Categoria": "A", "Proyeccion_Views": 188587, "P25": 123103, "P75": 253210, "Views_Reales": 264923}, {"Jornada": "3", "Local": "Am\u00e9rica", "Visitante": "Puebla", "Categoria": "AA", "Proyeccion_Views": 333392, "P25": 269094, "P75": 398262, "Views_Reales": 556943}, {"Jornada": "3", "Local": "Toluca", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 190636, "P25": 125586, "P75": 255897, "Views_Reales": 169556}, {"Jornada": "4", "Local": "Pumas", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 168914, "P25": 111249, "P75": 224674, "Views_Reales": 134191}, {"Jornada": "4", "Local": "Rayadas", "Visitante": "Le\u00f3n", "Categoria": "AA", "Proyeccion_Views": 312288, "P25": 256227, "P75": 368817, "Views_Reales": 172559}, {"Jornada": "4", "Local": "Cruz Azul", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 337621, "P25": 280412, "P75": 393880, "Views_Reales": 258737}, {"Jornada": "4", "Local": "Puebla", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 171241, "P25": 112970, "P75": 227265, "Views_Reales": 105998}, {"Jornada": "4", "Local": "Atlante", "Visitante": "Toluca", "Categoria": "A", "Proyeccion_Views": 171308, "P25": 113315, "P75": 228457, "Views_Reales": 178113}, {"Jornada": "5", "Local": "Toluca", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 174536, "P25": 117507, "P75": 229953, "Views_Reales": 271120}, {"Jornada": "5", "Local": "Puebla", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 203050, "P25": 146879, "P75": 259452, "Views_Reales": 133376}, {"Jornada": "5", "Local": "Am\u00e9rica", "Visitante": "Xolos", "Categoria": "AA", "Proyeccion_Views": 319313, "P25": 268758, "P75": 370468, "Views_Reales": 528261}, {"Jornada": "5", "Local": "San Luis", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 172881, "P25": 121163, "P75": 222427, "Views_Reales": 122879}, {"Jornada": "6", "Local": "Pumas", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 325595, "P25": 273808, "P75": 377585, "Views_Reales": 534470}, {"Jornada": "6", "Local": "Rayadas", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 310613, "P25": 259121, "P75": 361280, "Views_Reales": 194587}, {"Jornada": "6", "Local": "Atlante", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 185556, "P25": 135547, "P75": 236159, "Views_Reales": 187252}, {"Jornada": "7", "Local": "Cruz Azul", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 176451, "P25": 155231, "P75": 197741, "Views_Reales": 347611}, {"Jornada": "7", "Local": "Puebla", "Visitante": "Queretaro", "Categoria": "B", "Proyeccion_Views": 143293, "P25": 120167, "P75": 166034, "Views_Reales": 195885}, {"Jornada": "7", "Local": "Am\u00e9rica", "Visitante": "Tigres", "Categoria": "AAA", "Proyeccion_Views": 626609, "P25": 522496, "P75": 729741, "Views_Reales": 618254}, {"Jornada": "7", "Local": "San Luis", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 175504, "P25": 154155, "P75": 196116, "Views_Reales": 158327}, {"Jornada": "7", "Local": "Toluca", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 172799, "P25": 151685, "P75": 194116, "Views_Reales": 227364}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Necaxa", "Categoria": "A", "Proyeccion_Views": 224783, "P25": 201041, "P75": 248627, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Puebla", "Categoria": "A", "Proyeccion_Views": 276122, "P25": 252225, "P75": 300216, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlas", "Categoria": "AA", "Proyeccion_Views": 516046, "P25": 471903, "P75": 559768, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Pachuca", "Categoria": "A", "Proyeccion_Views": 167964, "P25": 143839, "P75": 191875, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 209900, "P25": 185722, "P75": 233668, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 345680, "P25": 301853, "P75": 388487, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 372195, "P25": 328352, "P75": 415095, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Rayadas", "Categoria": "AA", "Proyeccion_Views": 224855, "P25": 181452, "P75": 267966, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 209569, "P25": 185182, "P75": 233132, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 304377, "P25": 261373, "P75": 348069, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Am\u00e9rica", "Categoria": "AAA", "Proyeccion_Views": 337958, "P25": 264174, "P75": 410590, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 148506, "P25": 124594, "P75": 172651, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 233001, "P25": 190461, "P75": 275831, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 276011, "P25": 252001, "P75": 299873, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 168006, "P25": 144149, "P75": 192160, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Pachuca", "Categoria": "AAA", "Proyeccion_Views": 612396, "P25": 538250, "P75": 686138, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 183846, "P25": 160322, "P75": 207676, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 359511, "P25": 317276, "P75": 401987, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 315533, "P25": 272365, "P75": 358230, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 266960, "P25": 223975, "P75": 309515, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 344419, "P25": 300439, "P75": 387827, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Pumas", "Categoria": "AA", "Proyeccion_Views": 232106, "P25": 188519, "P75": 275784, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 148213, "P25": 124851, "P75": 171973, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 514974, "P25": 470927, "P75": 558655, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 267420, "P25": 223899, "P75": 311660, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 275578, "P25": 251503, "P75": 299200, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 166418, "P25": 142432, "P75": 190492, "Views_Reales": null}];
+        const datos = [{"Jornada": "1", "Local": "Cruz Azul", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 184333, "P25": 118433, "P75": 248601, "Views_Reales": 181294}, {"Jornada": "1", "Local": "Pumas", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 183240, "P25": 117240, "P75": 247044, "Views_Reales": 397744}, {"Jornada": "1", "Local": "Atlante", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 191780, "P25": 126315, "P75": 256154, "Views_Reales": 226529}, {"Jornada": "2", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 400122, "P25": 323329, "P75": 477149, "Views_Reales": 536016}, {"Jornada": "2", "Local": "Rayadas", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 356650, "P25": 280287, "P75": 433054, "Views_Reales": 168978}, {"Jornada": "2", "Local": "Puebla", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 401792, "P25": 326599, "P75": 476537, "Views_Reales": 219779}, {"Jornada": "2", "Local": "Toluca", "Visitante": "Juarez", "Categoria": "AA", "Proyeccion_Views": 190247, "P25": 112939, "P75": 262674, "Views_Reales": 195329}, {"Jornada": "3", "Local": "Cruz Azul", "Visitante": "Atlante", "Categoria": "A", "Proyeccion_Views": 188587, "P25": 123103, "P75": 253210, "Views_Reales": 264923}, {"Jornada": "3", "Local": "Am\u00e9rica", "Visitante": "Puebla", "Categoria": "AA", "Proyeccion_Views": 333392, "P25": 269094, "P75": 398262, "Views_Reales": 556943}, {"Jornada": "3", "Local": "Toluca", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 190636, "P25": 125586, "P75": 255897, "Views_Reales": 169556}, {"Jornada": "4", "Local": "Pumas", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 168914, "P25": 111249, "P75": 224674, "Views_Reales": 134191}, {"Jornada": "4", "Local": "Rayadas", "Visitante": "Le\u00f3n", "Categoria": "AA", "Proyeccion_Views": 312288, "P25": 256227, "P75": 368817, "Views_Reales": 172559}, {"Jornada": "4", "Local": "Cruz Azul", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 337621, "P25": 280412, "P75": 393880, "Views_Reales": 258737}, {"Jornada": "4", "Local": "Puebla", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 171241, "P25": 112970, "P75": 227265, "Views_Reales": 105998}, {"Jornada": "4", "Local": "Atlante", "Visitante": "Toluca", "Categoria": "A", "Proyeccion_Views": 171308, "P25": 113315, "P75": 228457, "Views_Reales": 178113}, {"Jornada": "5", "Local": "Toluca", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 174536, "P25": 117507, "P75": 229953, "Views_Reales": 271120}, {"Jornada": "5", "Local": "Puebla", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 203050, "P25": 146879, "P75": 259452, "Views_Reales": 133376}, {"Jornada": "5", "Local": "Am\u00e9rica", "Visitante": "Xolos", "Categoria": "AA", "Proyeccion_Views": 319313, "P25": 268758, "P75": 370468, "Views_Reales": 528261}, {"Jornada": "5", "Local": "San Luis", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 172881, "P25": 121163, "P75": 222427, "Views_Reales": 122879}, {"Jornada": "6", "Local": "Pumas", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 325595, "P25": 273808, "P75": 377585, "Views_Reales": 534470}, {"Jornada": "6", "Local": "Rayadas", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 310613, "P25": 259121, "P75": 361280, "Views_Reales": 194587}, {"Jornada": "6", "Local": "Atlante", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 185556, "P25": 135547, "P75": 236159, "Views_Reales": 187252}, {"Jornada": "7", "Local": "Cruz Azul", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 176451, "P25": 155231, "P75": 197741, "Views_Reales": 347611}, {"Jornada": "7", "Local": "Puebla", "Visitante": "Queretaro", "Categoria": "B", "Proyeccion_Views": 143293, "P25": 120167, "P75": 166034, "Views_Reales": 195885}, {"Jornada": "7", "Local": "Am\u00e9rica", "Visitante": "Tigres", "Categoria": "AAA", "Proyeccion_Views": 626609, "P25": 522496, "P75": 729741, "Views_Reales": 618254}, {"Jornada": "7", "Local": "San Luis", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 175504, "P25": 154155, "P75": 196116, "Views_Reales": 158327}, {"Jornada": "7", "Local": "Toluca", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 172799, "P25": 151685, "P75": 194116, "Views_Reales": 227364}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Necaxa", "Categoria": "A", "Proyeccion_Views": 198158, "P25": 183373, "P75": 213007, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Puebla", "Categoria": "A", "Proyeccion_Views": 272955, "P25": 258073, "P75": 287958, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlas", "Categoria": "AA", "Proyeccion_Views": 536946, "P25": 505261, "P75": 568328, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Pachuca", "Categoria": "A", "Proyeccion_Views": 165731, "P25": 150709, "P75": 180622, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 220905, "P25": 205849, "P75": 235706, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 339624, "P25": 308166, "P75": 370349, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 397991, "P25": 366522, "P75": 428783, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Rayadas", "Categoria": "AA", "Proyeccion_Views": 225131, "P25": 193992, "P75": 256105, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 220699, "P25": 205512, "P75": 235372, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 288606, "P25": 257739, "P75": 319966, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Am\u00e9rica", "Categoria": "AAA", "Proyeccion_Views": 402446, "P25": 336989, "P75": 467218, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 146787, "P25": 131897, "P75": 161824, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 221810, "P25": 191283, "P75": 252571, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 272885, "P25": 257934, "P75": 287745, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 165758, "P25": 150902, "P75": 180800, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Pachuca", "Categoria": "AAA", "Proyeccion_Views": 602337, "P25": 536466, "P75": 667850, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 165882, "P25": 151233, "P75": 180721, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 396621, "P25": 366306, "P75": 427110, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 307911, "P25": 276927, "P75": 338559, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 260575, "P25": 229722, "P75": 291122, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 338719, "P25": 307151, "P75": 369876, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Pumas", "Categoria": "AA", "Proyeccion_Views": 221166, "P25": 189889, "P75": 252536, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 146605, "P25": 132057, "P75": 161401, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 536176, "P25": 504561, "P75": 567529, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 260905, "P25": 229668, "P75": 292662, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 272616, "P25": 257623, "P75": 287325, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 177134, "P25": 162198, "P75": 192125, "Views_Reales": null}];
         const formatNum = (num) => new Intl.NumberFormat('es-MX').format(Math.round(num));
         let activeCat = null;
         const jornadas = [...new Set(datos.map(d => d.Jornada))];
@@ -114,6 +145,39 @@
 
         function getTagClass(cat) { if(cat === 'AAA') return 'tag-AAA'; if(cat === 'AA') return 'tag-AA'; if(cat === 'A') return 'tag-A'; return 'tag-B'; }
         function getStatus(d) { if (d.Views_Reales === null) return `<span class="status-pend">⏳ Pendiente</span>`; if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Corto </span>`; if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Arriba </span>`; return `<span class="status-ok">🔵 En Rango </span>`; }
+
+        // GENERADOR DE CAMPANA DE GAUSS SVG
+        function getGaussianSVG(pct) {
+            // Calcula puntos para una curva de campana genérica
+            let pts = [];
+            for(let i=0; i<=100; i+=2) {
+                let z = (i - 50) / 15; // Media=50, Desv=15
+                let y = 35 - (30 * Math.exp(-0.5 * z * z));
+                pts.push(`${i},${y}`);
+            }
+            let pathD = `M 0 35 L ${pts.join(' L ')} L 100 35 Z`;
+
+            // Ubica el punto del equipo (pct = 100% -> x = 50)
+            let dotX = Math.max(3, Math.min(97, pct - 50)); 
+            let dotZ = (dotX - 50) / 15;
+            let dotY = 35 - (30 * Math.exp(-0.5 * dotZ * dotZ));
+
+            let color = pct >= 95 ? '#27ae60' : (pct >= 80 ? '#f39c12' : '#e74c3c');
+
+            return `
+            <div style="display: flex; justify-content: center;">
+                <svg width="100" height="42" viewBox="0 0 100 42" style="overflow: visible;">
+                    <!-- Curva Gaussiana -->
+                    <path d="${pathD}" fill="#eaf2f8" stroke="#bdc3c7" stroke-width="1.5" stroke-linejoin="round"/>
+                    <!-- Línea central Meta 100% -->
+                    <line x1="50" y1="2" x2="50" y2="35" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="2,2" />
+                    <text x="50" y="44" font-size="7" font-family="sans-serif" font-weight="bold" fill="#7f8c8d" text-anchor="middle">META</text>
+                    <!-- Punto de Rendimiento Real -->
+                    <circle cx="${dotX}" cy="${dotY}" r="4" fill="${color}" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.3));"/>
+                </svg>
+            </div>
+            `;
+        }
 
         window.toggleCat = function(cat) {
             activeCat = (activeCat === cat) ? null : cat;
@@ -164,16 +228,29 @@
             }).sort((a, b) => b.diff - a.diff);
 
             const tbodyTeam = document.getElementById('teamPerformanceTable');
-            if (teamStats.length === 0) tbodyTeam.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#95a5a6; font-style:italic;">Aún no hay partidos jugados bajo estos filtros.</td></tr>`;
+            if (teamStats.length === 0) tbodyTeam.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#95a5a6; font-style:italic;">Aún no hay partidos jugados bajo estos filtros.</td></tr>`;
             else tbodyTeam.innerHTML = teamStats.map(t => {
                 let statusColor = '#e74c3c'; let emoji = '🔴';
                 if (t.pct >= 95) { statusColor = '#27ae60'; emoji = '🟢'; } else if (t.pct >= 80) { statusColor = '#f39c12'; emoji = '🟡'; }
-                return `<tr><td><strong>${t.team}</strong></td><td>${t.played}</td><td>${formatNum(t.proy)}</td><td><strong style="color: #2c3e50;">${formatNum(t.real)}</strong></td><td style="color:${statusColor}; font-weight:bold;">${t.diff >= 0 ? '+' : ''}${formatNum(t.diff)}</td><td><div style="display:flex; align-items:center; justify-content:center; gap:10px;"><span style="color:${statusColor}; font-weight:bold; width: 65px;">${emoji} ${t.pct}%</span><div style="background-color:#ecf0f1; border-radius:3px; height:8px; width:80px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"><div style="background-color:${statusColor}; height:100%; width:${Math.min(t.pct, 100)}%;"></div></div></div></td></tr>`;
+                return `<tr>
+                            <td><strong>${t.team}</strong></td>
+                            <td>${t.played}</td>
+                            <td>${formatNum(t.proy)}</td>
+                            <td><strong style="color: #2c3e50;">${formatNum(t.real)}</strong></td>
+                            <td style="color:${statusColor}; font-weight:bold;">${t.diff >= 0 ? '+' : ''}${formatNum(t.diff)}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                    <span style="color:${statusColor}; font-weight:bold; width: 65px;">${emoji} ${t.pct}%</span>
+                                </div>
+                            </td>
+                            <!-- AQUÍ SE INYECTA LA CAMPANA DE GAUSS -->
+                            <td>${getGaussianSVG(t.pct)}</td>
+                        </tr>`;
             }).join('');
 
             let tableSumProyectados = 0, tableSumP25 = 0, tableSumP75 = 0, tableTotalReales = 0;
             displayData.forEach(d => { tableSumProyectados += d.Proyeccion_Views; tableSumP25 += d.P25; tableSumP75 += d.P75; if (d.Views_Reales !== null) tableTotalReales += d.Views_Reales; });
-            
+
             let rowsHtml = displayData.map(d => `<tr><td>${d.Jornada}</td><td><strong>${d.Local}</strong></td><td>${d.Visitante}</td><td><span class="${getTagClass(d.Categoria)}">${d.Categoria}</span></td><td style="color:#2980b9; font-weight:bold;">${formatNum(d.Proyeccion_Views)}</td><td style="color: #7f8c8d; font-size: 13px;">${formatNum(d.P25)} - ${formatNum(d.P75)}</td><td style="font-weight:bold; color: #2c3e50;">${d.Views_Reales !== null ? formatNum(d.Views_Reales) : '-'}</td><td>${getStatus(d)}</td></tr>`).join('');
             rowsHtml += `<tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 15px;">TOTAL EN PANTALLA:</td><td></td><td>${formatNum(tableSumProyectados)}</td><td>${formatNum(tableSumP25)} - ${formatNum(tableSumP75)}</td><td>${formatNum(tableTotalReales)}</td><td>-</td></tr>`;
             document.getElementById('matchesTable').innerHTML = rowsHtml;
