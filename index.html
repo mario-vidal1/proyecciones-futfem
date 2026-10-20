@@ -6,11 +6,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; color: #333; margin: 0; padding: 20px; }
-        .dash-container { max-width: 1200px; margin: auto; }
+        .dash-container { max-width: 1260px; margin: auto; }
+        
+        /* NAVEGACIÓN DE PESTAÑAS (HOJA 1 Y HOJA 2) */
+        .tabs-nav { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
+        .tab-btn {
+            padding: 12px 26px; font-size: 15px; font-weight: bold; border: none;
+            border-radius: 8px; cursor: pointer; background: #dce4ec; color: #2c3e50;
+            transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .tab-btn:hover { background: #cbd6e2; transform: translateY(-1px); }
+        .tab-btn.active { background: #2c3e50; color: white; box-shadow: 0 4px 10px rgba(44,62,80,0.25); }
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+
         .grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
+        .grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .kpi-title { font-size: 14px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-top: 15px; }
-        .kpi-val { font-size: 26px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
+        .kpi-title { font-size: 13px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-top: 14px; }
+        .kpi-val { font-size: 26px; font-weight: bold; color: #2c3e50; margin-top: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
         th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #2c3e50; color: white; }
@@ -30,132 +44,207 @@
         .progress-bg { background-color: #ecf0f1; border-radius: 5px; height: 10px; width: 100%; margin-top: 8px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
         .progress-fill { background-color: #27ae60; height: 100%; transition: width 0.5s ease; }
         .controls { display: flex; justify-content: center; margin-bottom: 20px; gap: 20px; align-items: center; flex-wrap: wrap; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .filter-group { display: flex; align-items: center; gap: 10px; }
-        select { padding: 10px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
-        .metodologia-lista li { margin-bottom: 10px; line-height: 1.5; color: #34495e; }
+        .filter-group { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        select, input[type="number"] { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
+        .badge-info { background: #eaf2f8; color: #2980b9; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="dash-container">
-        <h2 style="text-align: center; color: #2c3e50; margin-bottom: 25px;">🎯 Dashboard Proyecciones FutFem AP26</h2>
+        <h2 style="text-align: center; color: #2c3e50; margin-bottom: 15px;">🎯 Sistema de Monitoreo y Benchmark - Liga MX Femenil AP26</h2>
 
-        <!-- CONTROLES -->
-        <div class="controls">
-            <div class="filter-group">
-                <label><strong>Filtro Jornada:</strong></label>
-                <select id="jornadaSelect"><option value="Todas">Todas (Acumulado)</option></select>
-            </div>
-            <div class="filter-group">
-                <label><strong>Filtro Local:</strong></label>
-                <select id="equipoSelect"><option value="Todos">Todos los Equipos</option></select>
-            </div>
+        <!-- BARRA DE PESTAÑAS -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="btn-tab1" onclick="switchTab(1)">📊 Hoja 1: Monitoreo y Cierre Dinámico AP26</button>
+            <button class="tab-btn" id="btn-tab2" onclick="switchTab(2)">📈 Hoja 2: Benchmark Multitorneo</button>
         </div>
 
-        <!-- KPIs SUPERIORES -->
-        <div class="grid">
-            <div class="card" style="display: flex; flex-direction: column;">
-                <div class="kpi-title" style="margin-top: 0;">Partidos Totales / Jugados</div>
-                <div class="kpi-val" id="kpiCount" style="color: #8e44ad; margin-bottom: 5px;">0 / 0</div>
-                <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 15px;">
-                    <div class="cat-box" id="box-AAA" onclick="toggleCat('AAA')">
-                        <div class="tag-AAA" style="display: inline-block; margin-bottom: 3px;">AAA</div>
-                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAAA">0 / 0</div>
-                    </div>
-                    <div class="cat-box" id="box-AA" onclick="toggleCat('AA')">
-                        <div class="tag-AA" style="display: inline-block; margin-bottom: 3px;">AA</div>
-                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAA">0 / 0</div>
-                    </div>
-                    <div class="cat-box" id="box-A" onclick="toggleCat('A')">
-                        <div class="tag-A" style="display: inline-block; margin-bottom: 3px;">A</div>
-                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiA">0 / 0</div>
-                    </div>
-                    <div class="cat-box" id="box-B" onclick="toggleCat('B')">
-                        <div class="tag-B" style="display: inline-block; margin-bottom: 3px;">B</div>
-                        <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiB">0 / 0</div>
-                    </div>
+        <!-- ========================================================= -->
+        <!-- HOJA 1: MONITOREO Y PROYECCIONES DEL TORNEO ACTUAL (AP26) -->
+        <!-- ========================================================= -->
+        <div id="tab-1" class="tab-view active">
+            <div class="controls">
+                <div class="filter-group">
+                    <label><strong>Filtro Jornada:</strong></label>
+                    <select id="jornadaSelect"><option value="Todas">Todas (Acumulado)</option></select>
                 </div>
-                <div class="kpi-title">Views Reales (Acumulado)</div>
-                <div class="kpi-val" id="kpiRealTotal" style="color: #e67e22; font-size: 22px;">0</div>
-                <div class="kpi-title">Views Proyectados (Torneo)</div>
-                <div class="kpi-val" id="kpiProyTotal" style="color: #2980b9; font-size: 22px;">0</div>
-                <div class="kpi-title">Views Faltantes (Meta)</div>
-                <div class="kpi-val" id="kpiFaltantes" style="color: #c0392b; font-size: 22px;">0</div>
-                <div class="kpi-title">Rango Central (50%)</div>
-                <div class="kpi-val" id="kpiRango" style="color: #7f8c8d; font-size: 18px;">0 - 0</div>
+                <div class="filter-group">
+                    <label><strong>Filtro Local:</strong></label>
+                    <select id="equipoSelect"><option value="Todos">Todos los Equipos</option></select>
+                </div>
             </div>
-            <div class="card"><canvas id="viewsChart" height="100"></canvas></div>
-        </div>
 
-        <!-- TABLA DE RENDIMIENTO POR EQUIPO -->
-        <div class="card" style="margin-top: 0;">
-            <h3 style="margin-top:0; color: #2c3e50;">📊 Rendimiento Acumulado por Equipo</h3>
-            <table class="hover-table">
-                <thead>
-                    <tr>
-                        <th>Equipo Local</th>
-                        <th>Partidos Jugados</th>
-                        <th>Proyección Total</th>
-                        <th>Views Reales</th>
-                        <th>Diferencia (Views)</th>
-                        <th>% Cumplimiento</th>
-                        <th>Curva de Rendimiento</th>
-                    </tr>
-                </thead>
-                <tbody id="teamPerformanceTable"></tbody>
-            </table>
-        </div>
-
-        <!-- TABLA DE DESGLOSE POR PARTIDO -->
-        <div class="card">
-            <h3 style="margin-top:0; color: #2c3e50;">📅 Desglose por Partido</h3>
-            <table class="hover-table">
-                <thead>
-                    <tr><th>Jornada</th><th>Local</th><th>Visitante</th><th>Cat.</th><th>Proyección</th><th>Rango Central (50%)</th><th>Views Reales</th><th>Estatus</th></tr>
-                </thead>
-                <tbody id="matchesTable"></tbody>
-            </table>
-        </div>
-
-        <!-- EXPLICACIÓN DEL MODELO QUANT (DESPLEGABLE) -->
-        <details class="card" style="background: #ffffff; border-left: 5px solid #2980b9; cursor: pointer;">
-            <summary style="font-size: 18px; font-weight: bold; color: #2c3e50; outline: none; display: flex; align-items: center; gap: 10px;">
-                <span></span> Haz clic aquí para leer la Metodología del Modelo
-            </summary>
-
-            <div style="margin-top: 15px; color: #34495e; font-size: 14px; line-height: 1.6; border-top: 1px solid #ecf0f1; padding-top: 15px; cursor: default;">
-                <p>Este dashboard funciona mediante machine learning y simulaciones estocásticas que procesan el historial de los torneos:</p>
-
-                <ol style="padding-left: 20px;">
-                    <li style="margin-bottom: 12px;">
-                        <strong>Limpieza Estricta y Orden Cronológico:</strong> El sistema agrupa transmisiones simultáneas para evitar duplicados. Se aplica un filtro del <strong>Cuantil 98%</strong> para descartar picos virales extremos (outliers) que podrían desfasar al modelo. Todo el historial se procesa en orden temporal para hacer un <em>train/test</em> evitando la fuga de datos.
-                    </li>
-                    <li style="margin-bottom: 12px;">
-                        <strong>Ingeniería de Variables:</strong> El modelo respeta las categorías de transmisión (AAA, AA, A, B) como base predictiva, pero añade una capa matemática detectando la presencia de equipos importantes en la cancha (sumando 0, 1 o 2). Esto le enseña al algoritmo a afinar la proyección y diferenciar un partido regular de un partido de alto perfil dentro de la misma categoría.
-                    </li>
-                    <li style="margin-bottom: 12px;">
-                        <strong>Entrenamiento de Inteligencia Artificial (Random Forest):</strong> Un ensamble de 1,000 árboles de decisión aprende las relaciones no lineales entre impresiones, interacciones, jerarquía de los equipos y fases finales (Liguilla). El margen de error se calcula utilizando métricas <strong>Out-Of-Bag (OOB)</strong>, es decir, el modelo se evalúa a sí mismo usando únicamente partidos que "no vio" durante su entrenamiento, garantizando un margen de error 100% realista.
-                    </li>
-                    <li style="margin-bottom: 12px;">
-                        <strong>Control de Riesgo (Shrinkage a la Media):</strong> Si un equipo no tiene suficiente historial jugando como local en una categoría específica, el sistema no adivina ni usa picos atípicos. En su lugar, aplica una técnica quant llamada <em>Shrinkage</em>, promediando el rendimiento histórico del equipo con el rendimiento global de toda la Liga en esa categoría. Esto estabiliza las proyecciones para equipos con pocos datos.
-                    </li>
-                    <li style="margin-bottom: 12px;">
-                        <strong>Simulación Monte Carlo (10,000 Iteraciones):</strong> El modelo no arroja un solo número estático. Utilizando la predicción base y el margen de error OOB, se simulan 10,000 escenarios posibles por cada partido usando una <em>Distribución Normal Truncada</em> (que impide matemáticamente que existan views negativos).
-                    </li>
-                    <li style="margin-bottom: 12px;">
-                        <strong>Rango de Confianza y Campana Visual:</strong> De las simulaciones se extrae la predicción central y el <strong>Rango Central (P25 - P75)</strong>, aislando el 50% de probabilidad más certera. La <em>Campana de Gauss</em> en la tabla dibuja este horizonte: el centro representa el cumplimiento exacto (100%) de la proyección, y la esfera de color muestra el posicionamiento porcentual del rendimiento real respecto a nuestra meta matemática.
-                    </li>
-                </ol>
+            <!-- KPIs SUPERIORES (CON ROLLING FORECAST DINÁMICO) -->
+            <div class="grid">
+                <div class="card" style="display: flex; flex-direction: column;">
+                    <div class="kpi-title" style="margin-top: 0;">Partidos Totales / Jugados</div>
+                    <div class="kpi-val" id="kpiCount" style="color: #8e44ad; margin-bottom: 5px;">0 / 0</div>
+                    <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 10px;">
+                        <div class="cat-box" id="box-AAA" onclick="toggleCat('AAA')">
+                            <div class="tag-AAA" style="display: inline-block; margin-bottom: 3px;">AAA</div>
+                            <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAAA">0 / 0</div>
+                        </div>
+                        <div class="cat-box" id="box-AA" onclick="toggleCat('AA')">
+                            <div class="tag-AA" style="display: inline-block; margin-bottom: 3px;">AA</div>
+                            <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiAA">0 / 0</div>
+                        </div>
+                        <div class="cat-box" id="box-A" onclick="toggleCat('A')">
+                            <div class="tag-A" style="display: inline-block; margin-bottom: 3px;">A</div>
+                            <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiA">0 / 0</div>
+                        </div>
+                        <div class="cat-box" id="box-B" onclick="toggleCat('B')">
+                            <div class="tag-B" style="display: inline-block; margin-bottom: 3px;">B</div>
+                            <div style="font-weight: bold; font-size: 15px; color: #2c3e50;" id="kpiB">0 / 0</div>
+                        </div>
+                    </div>
+                    <div class="kpi-title">Views Reales (Acumulado)</div>
+                    <div class="kpi-val" id="kpiRealTotal" style="color: #e67e22; font-size: 22px;">0</div>
+                    <div class="kpi-title">Views Proyectados (Torneo)</div>
+                    <div class="kpi-val" id="kpiProyTotal" style="color: #2980b9; font-size: 22px;">0</div>
+                    <div class="kpi-title">Views Faltantes (Meta)</div>
+                    <div class="kpi-val" id="kpiFaltantes" style="color: #c0392b; font-size: 22px;">0</div>
+                    <div class="kpi-title">Rango Central (50%)</div>
+                    <div class="kpi-val" id="kpiRango" style="color: #7f8c8d; font-size: 18px;">0 - 0</div>
+                </div>
+                <div class="card"><canvas id="viewsChart" height="100"></canvas></div>
             </div>
-        </details>
+
+            <!-- TABLA DE RENDIMIENTO POR EQUIPO -->
+            <div class="card" style="margin-top: 0;">
+                <h3 style="margin-top:0; color: #2c3e50;">📊 Rendimiento Acumulado por Equipo</h3>
+                <table class="hover-table">
+                    <thead>
+                        <tr>
+                            <th>Equipo Local</th>
+                            <th>Partidos Jugados</th>
+                            <th>Proyección Total</th>
+                            <th>Views Reales</th>
+                            <th>Diferencia (Views)</th>
+                            <th>% Cumplimiento</th>
+                            <th>Curva de Rendimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamPerformanceTable"></tbody>
+                </table>
+            </div>
+
+            <!-- TABLA DE DESGLOSE POR PARTIDO -->
+            <div class="card">
+                <h3 style="margin-top:0; color: #2c3e50;">📅 Desglose por Partido (Al final se muestra la Proyección Inicial Estática)</h3>
+                <table class="hover-table">
+                    <thead>
+                        <tr><th>Jornada</th><th>Local</th><th>Visitante</th><th>Cat.</th><th>Proyección Inicial</th><th>Rango Central (50%)</th><th>Views Reales</th><th>Estatus</th></tr>
+                    </thead>
+                    <tbody id="matchesTable"></tbody>
+                </table>
+            </div>
+
+            <!-- EXPLICACIÓN DEL MODELO QUANT -->
+            <details class="card" style="background: #ffffff; border-left: 5px solid #2980b9; cursor: pointer;">
+                <summary style="font-size: 18px; font-weight: bold; color: #2c3e50; outline: none; display: flex; align-items: center; gap: 10px;">
+                    <span>📘</span> Haz clic aquí para leer la Metodología del Modelo
+                </summary>
+                <div style="margin-top: 15px; color: #34495e; font-size: 14px; line-height: 1.6; border-top: 1px solid #ecf0f1; padding-top: 15px; cursor: default;">
+                    <p>Este dashboard funciona mediante machine learning y simulaciones estocásticas que procesan el historial de los torneos:</p>
+                    <ol style="padding-left: 20px;">
+                        <li style="margin-bottom: 10px;"><strong>Limpieza Estricta y Orden Cronológico:</strong> Agrupación por partido único y filtro del Cuantil 98% para entrenamiento sin sesgo de picos virales.</li>
+                        <li style="margin-bottom: 10px;"><strong>Ingeniería de Variables:</strong> Categorías (AAA, AA, A, B) combinadas con ponderación aditiva de equipos de alta convocatoria (0, 1 o 2).</li>
+                        <li style="margin-bottom: 10px;"><strong>Random Forest con Residuales OOB:</strong> 1,000 árboles evaluados con predicciones Out-Of-Bag para evitar fuga de datos.</li>
+                        <li style="margin-bottom: 10px;"><strong>Rolling Forecast Dinámico en KPIs:</strong> Los KPIs superiores suman los <em>Views Reales</em> ya asegurados en partidos jugados (varianza cero) más las <em>Proyecciones y Rangos (P25-P75)</em> únicamente de los partidos pendientes por jugar.</li>
+                    </ol>
+                </div>
+            </details>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- HOJA 2: BENCHMARK MULTITORNEO                             -->
+        <!-- ========================================================= -->
+        <div id="tab-2" class="tab-view">
+            <div class="controls">
+                <div class="filter-group">
+                    <label><strong>Corte de Partidos (N):</strong></label>
+                    <input type="number" id="inputCorteN" min="1" max="100" style="width: 70px;" onchange="updateBenchmark()">
+                    <span class="badge-info" id="badgeCorteInfo">Homologado al avance de AP26</span>
+                </div>
+                <div class="filter-group">
+                    <label><strong>Mix de Categorías:</strong></label>
+                    <select id="selectCatMode" onchange="updateBenchmark()">
+                        <option value="N_Count">Primeros N Partidos (# Juegos)</option>
+                        <option value="N_Pct">Primeros N Partidos (% Mix)</option>
+                        <option value="All_Count">Torneo Completo (# Juegos)</option>
+                        <option value="All_Pct">Torneo Completo (% Mix)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="chkVerJ17" onchange="updateBenchmark()">
+                        <strong>Mostrar J15-J17 históricas</strong> <span id="lblAutoJ14" style="font-size:12px; color:#7f8c8d;"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 1: RENDIMIENTO PROMEDIO POR JORNADA -->
+            <div class="card">
+                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartJornada">1. Rendimiento Promedio por Jornada</h3>
+                <canvas id="benchJornadaChart" height="90"></canvas>
+            </div>
+
+            <!-- GRÁFICOS 2 Y 3: VOLUMEN ACUMULADO (CON BARRA TRASERA TOTAL) Y MIX DE CATEGORÍAS -->
+            <div class="grid-half">
+                <div class="card">
+                    <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartVolumen">2. Volumen Acumulado vs. Total Torneo</h3>
+                    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
+                        Barra frontal sólida: Acumulado al Partido N | Barra trasera clara: Total Torneo (En AP26 = Reales + Proyectados pendientes)
+                    </p>
+                    <canvas id="benchVolumenChart" height="165"></canvas>
+                </div>
+                <div class="card">
+                    <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartCat">3. Mix de Categorías de Partidos Transmitidos</h3>
+                    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
+                        Proporción de duelos AAA, AA, A y B transmitidos por torneo
+                    </p>
+                    <canvas id="benchCatChart" height="165"></canvas>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 4: ESTABILIDAD DE AUDIENCIA (BOXPLOT AL PARTIDO N) -->
+            <div class="card">
+                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartBoxplot">4. Estabilidad de Audiencia (Distribución al Partido N)</h3>
+                <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
+                    Caja: Rango Intercuartil (P25 a P75) | Línea interior: Mediana (P50) | Punto blanco: Promedio | Bigotes: Mínimo y Máximo (sin outliers extremos)
+                </p>
+                <canvas id="benchBoxplotChart" height="105"></canvas>
+            </div>
+        </div>
 
     </div>
 
     <script>
-        const datos = [{"Jornada": "1", "Local": "Cruz Azul", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 228974, "P25": 181692, "P75": 277007, "Views_Reales": 266654}, {"Jornada": "1", "Local": "Pumas", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 277630, "P25": 229488, "P75": 325764, "Views_Reales": 397744}, {"Jornada": "1", "Local": "Atlante", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 186051, "P25": 150056, "P75": 221979, "Views_Reales": 226529}, {"Jornada": "2", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 600310, "P25": 500643, "P75": 701074, "Views_Reales": 585585}, {"Jornada": "2", "Local": "Rayadas", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 254530, "P25": 158302, "P75": 342932, "Views_Reales": 168978}, {"Jornada": "2", "Local": "Puebla", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 257236, "P25": 157663, "P75": 346347, "Views_Reales": 221623}, {"Jornada": "2", "Local": "Toluca", "Visitante": "Juarez", "Categoria": "AA", "Proyeccion_Views": 456662, "P25": 356787, "P75": 556813, "Views_Reales": 195329}, {"Jornada": "3", "Local": "Cruz Azul", "Visitante": "Atlante", "Categoria": "A", "Proyeccion_Views": 228334, "P25": 180378, "P75": 275284, "Views_Reales": 311918}, {"Jornada": "3", "Local": "Am\u00e9rica", "Visitante": "Puebla", "Categoria": "AA", "Proyeccion_Views": 599409, "P25": 500862, "P75": 697115, "Views_Reales": 570944}, {"Jornada": "3", "Local": "Toluca", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 179714, "P25": 131899, "P75": 226510, "Views_Reales": 169556}, {"Jornada": "4", "Local": "Pumas", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 276452, "P25": 229064, "P75": 324495, "Views_Reales": 134191}, {"Jornada": "4", "Local": "Rayadas", "Visitante": "Le\u00f3n", "Categoria": "AA", "Proyeccion_Views": 253971, "P25": 154100, "P75": 342007, "Views_Reales": 172559}, {"Jornada": "4", "Local": "Cruz Azul", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 507699, "P25": 407422, "P75": 609659, "Views_Reales": 286104}, {"Jornada": "4", "Local": "Puebla", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 155966, "P25": 108885, "P75": 201582, "Views_Reales": 105998}, {"Jornada": "4", "Local": "Atlante", "Visitante": "Toluca", "Categoria": "A", "Proyeccion_Views": 193801, "P25": 145135, "P75": 240869, "Views_Reales": 178113}, {"Jornada": "5", "Local": "Toluca", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 178828, "P25": 131332, "P75": 225105, "Views_Reales": 271120}, {"Jornada": "5", "Local": "Puebla", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 151913, "P25": 116026, "P75": 186978, "Views_Reales": 141141}, {"Jornada": "5", "Local": "Am\u00e9rica", "Visitante": "Xolos", "Categoria": "AA", "Proyeccion_Views": 599749, "P25": 498992, "P75": 698181, "Views_Reales": 709588}, {"Jornada": "5", "Local": "San Luis", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 159472, "P25": 111125, "P75": 205245, "Views_Reales": 122879}, {"Jornada": "6", "Local": "Pumas", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 301399, "P25": 201340, "P75": 395500, "Views_Reales": 759015}, {"Jornada": "6", "Local": "Rayadas", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 254432, "P25": 152366, "P75": 342713, "Views_Reales": 194587}, {"Jornada": "6", "Local": "Atlante", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 193077, "P25": 144038, "P75": 241138, "Views_Reales": 187252}, {"Jornada": "7", "Local": "Cruz Azul", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 226761, "P25": 178956, "P75": 274508, "Views_Reales": 381611}, {"Jornada": "7", "Local": "Puebla", "Visitante": "Queretaro", "Categoria": "B", "Proyeccion_Views": 153297, "P25": 117979, "P75": 187660, "Views_Reales": 217085}, {"Jornada": "7", "Local": "Am\u00e9rica", "Visitante": "Tigres", "Categoria": "AAA", "Proyeccion_Views": 761423, "P25": 530639, "P75": 980874, "Views_Reales": 962254}, {"Jornada": "7", "Local": "San Luis", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 160164, "P25": 111873, "P75": 205905, "Views_Reales": 158327}, {"Jornada": "7", "Local": "Toluca", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 180211, "P25": 132545, "P75": 227365, "Views_Reales": 227364}, {"Jornada": "8", "Local": "Rayadas", "Visitante": "Necaxa", "Categoria": "A", "Proyeccion_Views": 243081, "P25": 195603, "P75": 290661, "Views_Reales": 357293}, {"Jornada": "8", "Local": "Pumas", "Visitante": "Puebla", "Categoria": "A", "Proyeccion_Views": 277815, "P25": 230054, "P75": 325950, "Views_Reales": 217334}, {"Jornada": "8", "Local": "Am\u00e9rica", "Visitante": "Atlas", "Categoria": "AA", "Proyeccion_Views": 600405, "P25": 498408, "P75": 701411, "Views_Reales": 803795}, {"Jornada": "8", "Local": "San Luis", "Visitante": "Pachuca", "Categoria": "A", "Proyeccion_Views": 159301, "P25": 110882, "P75": 205426, "Views_Reales": 208077}, {"Jornada": "8", "Local": "Atlante", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 194081, "P25": 145628, "P75": 241085, "Views_Reales": 210221}, {"Jornada": "8", "Local": "Toluca", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 473800, "P25": 372448, "P75": 572436, "Views_Reales": 421907}, {"Jornada": "9", "Local": "Cruz Azul", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 532659, "P25": 427582, "P75": 635265, "Views_Reales": 746011}, {"Jornada": "9", "Local": "Puebla", "Visitante": "Rayadas", "Categoria": "AA", "Proyeccion_Views": 259171, "P25": 156457, "P75": 350276, "Views_Reales": 306472}, {"Jornada": "9", "Local": "Atlante", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 211562, "P25": 160913, "P75": 260102, "Views_Reales": 238335}, {"Jornada": "10", "Local": "Pumas", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 311609, "P25": 208139, "P75": 409991, "Views_Reales": 418266}, {"Jornada": "10", "Local": "Rayadas", "Visitante": "Am\u00e9rica", "Categoria": "AAA", "Proyeccion_Views": 523289, "P25": 306613, "P75": 712414, "Views_Reales": 1844660}, {"Jornada": "11", "Local": "Puebla", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 175422, "P25": 125752, "P75": 224116, "Views_Reales": 208873}, {"Jornada": "11", "Local": "Rayadas", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 255305, "P25": 156938, "P75": 344342, "Views_Reales": 542101}, {"Jornada": "11", "Local": "Pumas", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 280689, "P25": 231037, "P75": 330013, "Views_Reales": 213535}, {"Jornada": "11", "Local": "San Luis", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 162393, "P25": 112759, "P75": 210402, "Views_Reales": 194343}, {"Jornada": "11", "Local": "Am\u00e9rica", "Visitante": "Pachuca", "Categoria": "AAA", "Proyeccion_Views": 707689, "P25": 485133, "P75": 918572, "Views_Reales": 705131}, {"Jornada": "11", "Local": "Toluca", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 177565, "P25": 128623, "P75": 225607, "Views_Reales": 216331}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 543688, "P25": 441915, "P75": 645862, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "San Luis", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 438800, "P25": 334520, "P75": 540736, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 311152, "P25": 207435, "P75": 407413, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Toluca", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 514019, "P25": 408029, "P75": 618365, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Rayadas", "Visitante": "Pumas", "Categoria": "AA", "Proyeccion_Views": 254271, "P25": 151188, "P75": 346452, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Puebla", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 179284, "P25": 131429, "P75": 226724, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Am\u00e9rica", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 597971, "P25": 491886, "P75": 703137, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Atlante", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 312663, "P25": 207264, "P75": 412516, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Pumas", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 246678, "P25": 197590, "P75": 294759, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Local": "Cruz Azul", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 219375, "P25": 170391, "P75": 268201, "Views_Reales": null}];
+        const datos = [{"Jornada": "1", "Jor_Num": 1, "Local": "Cruz Azul", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 228974, "P25": 181692, "P75": 277007, "Views_Reales": 266654}, {"Jornada": "1", "Jor_Num": 1, "Local": "Pumas", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 277630, "P25": 229488, "P75": 325764, "Views_Reales": 397744}, {"Jornada": "1", "Jor_Num": 1, "Local": "Atlante", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 186051, "P25": 150056, "P75": 221979, "Views_Reales": 226529}, {"Jornada": "2", "Jor_Num": 2, "Local": "Am\u00e9rica", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 600310, "P25": 500643, "P75": 701074, "Views_Reales": 585585}, {"Jornada": "2", "Jor_Num": 2, "Local": "Rayadas", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 254530, "P25": 158302, "P75": 342932, "Views_Reales": 168978}, {"Jornada": "2", "Jor_Num": 2, "Local": "Puebla", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 257236, "P25": 157663, "P75": 346347, "Views_Reales": 221623}, {"Jornada": "2", "Jor_Num": 2, "Local": "Toluca", "Visitante": "Juarez", "Categoria": "AA", "Proyeccion_Views": 456662, "P25": 356787, "P75": 556813, "Views_Reales": 195329}, {"Jornada": "3", "Jor_Num": 3, "Local": "Cruz Azul", "Visitante": "Atlante", "Categoria": "A", "Proyeccion_Views": 228334, "P25": 180378, "P75": 275284, "Views_Reales": 311918}, {"Jornada": "3", "Jor_Num": 3, "Local": "Am\u00e9rica", "Visitante": "Puebla", "Categoria": "AA", "Proyeccion_Views": 599409, "P25": 500862, "P75": 697115, "Views_Reales": 570944}, {"Jornada": "3", "Jor_Num": 3, "Local": "Toluca", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 179714, "P25": 131899, "P75": 226510, "Views_Reales": 169556}, {"Jornada": "4", "Jor_Num": 4, "Local": "Pumas", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 276452, "P25": 229064, "P75": 324495, "Views_Reales": 134191}, {"Jornada": "4", "Jor_Num": 4, "Local": "Rayadas", "Visitante": "Le\u00f3n", "Categoria": "AA", "Proyeccion_Views": 253971, "P25": 154100, "P75": 342007, "Views_Reales": 172559}, {"Jornada": "4", "Jor_Num": 4, "Local": "Cruz Azul", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 507699, "P25": 407422, "P75": 609659, "Views_Reales": 286104}, {"Jornada": "4", "Jor_Num": 4, "Local": "Puebla", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 155966, "P25": 108885, "P75": 201582, "Views_Reales": 105998}, {"Jornada": "4", "Jor_Num": 4, "Local": "Atlante", "Visitante": "Toluca", "Categoria": "A", "Proyeccion_Views": 193801, "P25": 145135, "P75": 240869, "Views_Reales": 178113}, {"Jornada": "5", "Jor_Num": 5, "Local": "Toluca", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 178828, "P25": 131332, "P75": 225105, "Views_Reales": 271120}, {"Jornada": "5", "Jor_Num": 5, "Local": "Puebla", "Visitante": "Necaxa", "Categoria": "B", "Proyeccion_Views": 151913, "P25": 116026, "P75": 186978, "Views_Reales": 141141}, {"Jornada": "5", "Jor_Num": 5, "Local": "Am\u00e9rica", "Visitante": "Xolos", "Categoria": "AA", "Proyeccion_Views": 599749, "P25": 498992, "P75": 698181, "Views_Reales": 709588}, {"Jornada": "5", "Jor_Num": 5, "Local": "San Luis", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 159472, "P25": 111125, "P75": 205245, "Views_Reales": 122879}, {"Jornada": "6", "Jor_Num": 6, "Local": "Pumas", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 301399, "P25": 201340, "P75": 395500, "Views_Reales": 759015}, {"Jornada": "6", "Jor_Num": 6, "Local": "Rayadas", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 254432, "P25": 152366, "P75": 342713, "Views_Reales": 194587}, {"Jornada": "6", "Jor_Num": 6, "Local": "Atlante", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 193077, "P25": 144038, "P75": 241138, "Views_Reales": 187252}, {"Jornada": "7", "Jor_Num": 7, "Local": "Cruz Azul", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 226761, "P25": 178956, "P75": 274508, "Views_Reales": 381611}, {"Jornada": "7", "Jor_Num": 7, "Local": "Puebla", "Visitante": "Queretaro", "Categoria": "B", "Proyeccion_Views": 153297, "P25": 117979, "P75": 187660, "Views_Reales": 217085}, {"Jornada": "7", "Jor_Num": 7, "Local": "Am\u00e9rica", "Visitante": "Tigres", "Categoria": "AAA", "Proyeccion_Views": 761423, "P25": 530639, "P75": 980874, "Views_Reales": 962254}, {"Jornada": "7", "Jor_Num": 7, "Local": "San Luis", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 160164, "P25": 111873, "P75": 205905, "Views_Reales": 158327}, {"Jornada": "7", "Jor_Num": 7, "Local": "Toluca", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 180211, "P25": 132545, "P75": 227365, "Views_Reales": 227364}, {"Jornada": "8", "Jor_Num": 8, "Local": "Rayadas", "Visitante": "Necaxa", "Categoria": "A", "Proyeccion_Views": 243081, "P25": 195603, "P75": 290661, "Views_Reales": 357293}, {"Jornada": "8", "Jor_Num": 8, "Local": "Pumas", "Visitante": "Puebla", "Categoria": "A", "Proyeccion_Views": 277815, "P25": 230054, "P75": 325950, "Views_Reales": 217334}, {"Jornada": "8", "Jor_Num": 8, "Local": "Am\u00e9rica", "Visitante": "Atlas", "Categoria": "AA", "Proyeccion_Views": 600405, "P25": 498408, "P75": 701411, "Views_Reales": 803795}, {"Jornada": "8", "Jor_Num": 8, "Local": "San Luis", "Visitante": "Pachuca", "Categoria": "A", "Proyeccion_Views": 159301, "P25": 110882, "P75": 205426, "Views_Reales": 208077}, {"Jornada": "8", "Jor_Num": 8, "Local": "Atlante", "Visitante": "Queretaro", "Categoria": "A", "Proyeccion_Views": 194081, "P25": 145628, "P75": 241085, "Views_Reales": 210221}, {"Jornada": "8", "Jor_Num": 8, "Local": "Toluca", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 473800, "P25": 372448, "P75": 572436, "Views_Reales": 421907}, {"Jornada": "9", "Jor_Num": 9, "Local": "Cruz Azul", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 532659, "P25": 427582, "P75": 635265, "Views_Reales": 746011}, {"Jornada": "9", "Jor_Num": 9, "Local": "Puebla", "Visitante": "Rayadas", "Categoria": "AA", "Proyeccion_Views": 259171, "P25": 156457, "P75": 350276, "Views_Reales": 306472}, {"Jornada": "9", "Jor_Num": 9, "Local": "Atlante", "Visitante": "Pumas", "Categoria": "A", "Proyeccion_Views": 211562, "P25": 160913, "P75": 260102, "Views_Reales": 238335}, {"Jornada": "10", "Jor_Num": 10, "Local": "Pumas", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 311609, "P25": 208139, "P75": 409991, "Views_Reales": 418266}, {"Jornada": "10", "Jor_Num": 10, "Local": "Rayadas", "Visitante": "Am\u00e9rica", "Categoria": "AAA", "Proyeccion_Views": 523289, "P25": 306613, "P75": 712414, "Views_Reales": 1844660}, {"Jornada": "11", "Jor_Num": 11, "Local": "Puebla", "Visitante": "Xolos", "Categoria": "A", "Proyeccion_Views": 175422, "P25": 125752, "P75": 224116, "Views_Reales": 208873}, {"Jornada": "11", "Jor_Num": 11, "Local": "Rayadas", "Visitante": "Cruz Azul", "Categoria": "AA", "Proyeccion_Views": 255305, "P25": 156938, "P75": 344342, "Views_Reales": 542101}, {"Jornada": "11", "Jor_Num": 11, "Local": "Pumas", "Visitante": "Atlas", "Categoria": "A", "Proyeccion_Views": 280689, "P25": 231037, "P75": 330013, "Views_Reales": 213535}, {"Jornada": "11", "Jor_Num": 11, "Local": "San Luis", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 162393, "P25": 112759, "P75": 210402, "Views_Reales": 194343}, {"Jornada": "11", "Jor_Num": 11, "Local": "Am\u00e9rica", "Visitante": "Pachuca", "Categoria": "AAA", "Proyeccion_Views": 707689, "P25": 485133, "P75": 918572, "Views_Reales": 705131}, {"Jornada": "11", "Jor_Num": 11, "Local": "Toluca", "Visitante": "Santos", "Categoria": "A", "Proyeccion_Views": 177565, "P25": 128623, "P75": 225607, "Views_Reales": 216331}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Cruz Azul", "Visitante": "Toluca", "Categoria": "AA", "Proyeccion_Views": 543688, "P25": 441915, "P75": 645862, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "San Luis", "Visitante": "Am\u00e9rica", "Categoria": "AA", "Proyeccion_Views": 438800, "P25": 334520, "P75": 540736, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Atlante", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 311152, "P25": 207435, "P75": 407413, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Toluca", "Visitante": "Chivas", "Categoria": "AA", "Proyeccion_Views": 514019, "P25": 408029, "P75": 618365, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Rayadas", "Visitante": "Pumas", "Categoria": "AA", "Proyeccion_Views": 254271, "P25": 151188, "P75": 346452, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Puebla", "Visitante": "Juarez", "Categoria": "A", "Proyeccion_Views": 179284, "P25": 131429, "P75": 226724, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Am\u00e9rica", "Visitante": "Atlante", "Categoria": "AA", "Proyeccion_Views": 597971, "P25": 491886, "P75": 703137, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Atlante", "Visitante": "Tigres", "Categoria": "AA", "Proyeccion_Views": 312663, "P25": 207264, "P75": 412516, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Pumas", "Visitante": "San Luis", "Categoria": "A", "Proyeccion_Views": 246678, "P25": 197590, "P75": 294759, "Views_Reales": null}, {"Jornada": "Sin Fecha", "Jor_Num": null, "Local": "Cruz Azul", "Visitante": "Le\u00f3n", "Categoria": "A", "Proyeccion_Views": 219375, "P25": 170391, "P75": 268201, "Views_Reales": null}];
+        const benchRaw = {"torneos_orden": ["CL25", "AP25", "CL26", "AP26"], "data": {"CL25": {"partidos_jugados": [{"Jornada": 1, "Views": 471256, "Categoria": "A", "Local": "Pumas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 1, "Views": 681251, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Chivas"}, {"Jornada": 1, "Views": 885009, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul"}, {"Jornada": 1, "Views": 61496, "Categoria": "A", "Local": "Juarez", "Visitante": "Puebla"}, {"Jornada": 2, "Views": 425830, "Categoria": "A", "Local": "Toluca", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 2, "Views": 543533, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pumas"}, {"Jornada": 2, "Views": 866050, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Quer\u00e9taro"}, {"Jornada": 2, "Views": 222660, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Tijuana"}, {"Jornada": 2, "Views": 102943, "Categoria": "A", "Local": "Juarez", "Visitante": "Necaxa"}, {"Jornada": 3, "Views": 360201, "Categoria": "A", "Local": "Pumas", "Visitante": "Santos"}, {"Jornada": 3, "Views": 446338, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 4, "Views": 293028, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Puebla"}, {"Jornada": 4, "Views": 228721, "Categoria": "A", "Local": "Toluca", "Visitante": "Quer\u00e9taro"}, {"Jornada": 4, "Views": 411357, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Chivas"}, {"Jornada": 5, "Views": 501580, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Le\u00f3n"}, {"Jornada": 5, "Views": 116458, "Categoria": "B", "Local": "Cruz Azul", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 182672, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pumas"}, {"Jornada": 6, "Views": 250778, "Categoria": "A", "Local": "Pumas", "Visitante": "Toluca"}, {"Jornada": 6, "Views": 143944, "Categoria": "A", "Local": "Necaxa", "Visitante": "Puebla"}, {"Jornada": 6, "Views": 226625, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Tijuana"}, {"Jornada": 6, "Views": 133412, "Categoria": "A", "Local": "Juarez", "Visitante": "Le\u00f3n"}, {"Jornada": 7, "Views": 224791, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}, {"Jornada": 7, "Views": 95277, "Categoria": "A", "Local": "Toluca", "Visitante": "Atlas"}, {"Jornada": 7, "Views": 248845, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Necaxa"}, {"Jornada": 7, "Views": 494837, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 7, "Views": 97770, "Categoria": "A", "Local": "Juarez", "Visitante": "Quer\u00e9taro"}, {"Jornada": 8, "Views": 105821, "Categoria": "A", "Local": "Toluca", "Visitante": "Santos"}, {"Jornada": 8, "Views": 185955, "Categoria": "A", "Local": "Pumas", "Visitante": "Cruz Azul"}, {"Jornada": 8, "Views": 563407, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 9, "Views": 242131, "Categoria": "A", "Local": "Necaxa", "Visitante": "Tijuana"}, {"Jornada": 9, "Views": 481044, "Categoria": "AA", "Local": "Pumas", "Visitante": "Am\u00e9rica"}, {"Jornada": 9, "Views": 252279, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 13, "Views": 208212, "Categoria": "A", "Local": "Toluca", "Visitante": "Necaxa"}, {"Jornada": 10, "Views": 592160, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 232194, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 10, "Views": 355518, "Categoria": "A", "Local": "Toluca", "Visitante": "Juarez"}, {"Jornada": 11, "Views": 313229, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 11, "Views": 207358, "Categoria": "A", "Local": "Pumas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 11, "Views": 289606, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Tigres"}, {"Jornada": 12, "Views": 414952, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Puebla"}, {"Jornada": 12, "Views": 159437, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Toluca"}, {"Jornada": 12, "Views": 170631, "Categoria": "A", "Local": "Necaxa", "Visitante": "Le\u00f3n"}, {"Jornada": 13, "Views": 236638, "Categoria": "A", "Local": "Pumas", "Visitante": "Tijuana"}, {"Jornada": 14, "Views": 267369, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Le\u00f3n"}, {"Jornada": 14, "Views": 217401, "Categoria": "B", "Local": "Necaxa", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 14, "Views": 580864, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 14, "Views": 373871, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Juarez"}, {"Jornada": 15, "Views": 206845, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Quer\u00e9taro"}, {"Jornada": 15, "Views": 191350, "Categoria": "AA", "Local": "Toluca", "Visitante": "Rayadas"}, {"Jornada": 16, "Views": 172972, "Categoria": "A", "Local": "Necaxa", "Visitante": "Cruz Azul"}, {"Jornada": 16, "Views": 218305, "Categoria": "AA", "Local": "Pumas", "Visitante": "Tigres"}, {"Jornada": 16, "Views": 402715, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Tijuana"}, {"Jornada": 16, "Views": 296012, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 17, "Views": 188245, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Juarez"}, {"Jornada": 17, "Views": 315569, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 17, "Views": 204625, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Le\u00f3n"}, {"Jornada": 18, "Views": 636579, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 18, "Views": 590730, "Categoria": "AA", "Local": "Pumas", "Visitante": "Chivas"}, {"Jornada": 18, "Views": 791350, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 19, "Views": 1101936, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 19, "Views": 1446181, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 20, "Views": 1818139, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Pachuca"}], "partidos_totales_calendario": [{"Jornada": 1, "Views": 471256, "Categoria": "A", "Local": "Pumas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 1, "Views": 681251, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Chivas"}, {"Jornada": 1, "Views": 885009, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul"}, {"Jornada": 1, "Views": 61496, "Categoria": "A", "Local": "Juarez", "Visitante": "Puebla"}, {"Jornada": 2, "Views": 425830, "Categoria": "A", "Local": "Toluca", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 2, "Views": 543533, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pumas"}, {"Jornada": 2, "Views": 866050, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Quer\u00e9taro"}, {"Jornada": 2, "Views": 222660, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Tijuana"}, {"Jornada": 2, "Views": 102943, "Categoria": "A", "Local": "Juarez", "Visitante": "Necaxa"}, {"Jornada": 3, "Views": 360201, "Categoria": "A", "Local": "Pumas", "Visitante": "Santos"}, {"Jornada": 3, "Views": 446338, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 4, "Views": 293028, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Puebla"}, {"Jornada": 4, "Views": 228721, "Categoria": "A", "Local": "Toluca", "Visitante": "Quer\u00e9taro"}, {"Jornada": 4, "Views": 411357, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Chivas"}, {"Jornada": 5, "Views": 501580, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Le\u00f3n"}, {"Jornada": 5, "Views": 116458, "Categoria": "B", "Local": "Cruz Azul", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 182672, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pumas"}, {"Jornada": 6, "Views": 250778, "Categoria": "A", "Local": "Pumas", "Visitante": "Toluca"}, {"Jornada": 6, "Views": 143944, "Categoria": "A", "Local": "Necaxa", "Visitante": "Puebla"}, {"Jornada": 6, "Views": 226625, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Tijuana"}, {"Jornada": 6, "Views": 133412, "Categoria": "A", "Local": "Juarez", "Visitante": "Le\u00f3n"}, {"Jornada": 7, "Views": 224791, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}, {"Jornada": 7, "Views": 95277, "Categoria": "A", "Local": "Toluca", "Visitante": "Atlas"}, {"Jornada": 7, "Views": 248845, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Necaxa"}, {"Jornada": 7, "Views": 494837, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 7, "Views": 97770, "Categoria": "A", "Local": "Juarez", "Visitante": "Quer\u00e9taro"}, {"Jornada": 8, "Views": 105821, "Categoria": "A", "Local": "Toluca", "Visitante": "Santos"}, {"Jornada": 8, "Views": 185955, "Categoria": "A", "Local": "Pumas", "Visitante": "Cruz Azul"}, {"Jornada": 8, "Views": 563407, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 9, "Views": 242131, "Categoria": "A", "Local": "Necaxa", "Visitante": "Tijuana"}, {"Jornada": 9, "Views": 481044, "Categoria": "AA", "Local": "Pumas", "Visitante": "Am\u00e9rica"}, {"Jornada": 9, "Views": 252279, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 13, "Views": 208212, "Categoria": "A", "Local": "Toluca", "Visitante": "Necaxa"}, {"Jornada": 10, "Views": 592160, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 232194, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 10, "Views": 355518, "Categoria": "A", "Local": "Toluca", "Visitante": "Juarez"}, {"Jornada": 11, "Views": 313229, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 11, "Views": 207358, "Categoria": "A", "Local": "Pumas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 11, "Views": 289606, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Tigres"}, {"Jornada": 12, "Views": 414952, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Puebla"}, {"Jornada": 12, "Views": 159437, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Toluca"}, {"Jornada": 12, "Views": 170631, "Categoria": "A", "Local": "Necaxa", "Visitante": "Le\u00f3n"}, {"Jornada": 13, "Views": 236638, "Categoria": "A", "Local": "Pumas", "Visitante": "Tijuana"}, {"Jornada": 14, "Views": 267369, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Le\u00f3n"}, {"Jornada": 14, "Views": 217401, "Categoria": "B", "Local": "Necaxa", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 14, "Views": 580864, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 14, "Views": 373871, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Juarez"}, {"Jornada": 15, "Views": 206845, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Quer\u00e9taro"}, {"Jornada": 15, "Views": 191350, "Categoria": "AA", "Local": "Toluca", "Visitante": "Rayadas"}, {"Jornada": 16, "Views": 172972, "Categoria": "A", "Local": "Necaxa", "Visitante": "Cruz Azul"}, {"Jornada": 16, "Views": 218305, "Categoria": "AA", "Local": "Pumas", "Visitante": "Tigres"}, {"Jornada": 16, "Views": 402715, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Tijuana"}, {"Jornada": 16, "Views": 296012, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 17, "Views": 188245, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Juarez"}, {"Jornada": 17, "Views": 315569, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 17, "Views": 204625, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Le\u00f3n"}, {"Jornada": 18, "Views": 636579, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 18, "Views": 590730, "Categoria": "AA", "Local": "Pumas", "Visitante": "Chivas"}, {"Jornada": 18, "Views": 791350, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 19, "Views": 1101936, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 19, "Views": 1446181, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 20, "Views": 1818139, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Pachuca"}], "es_actual": false, "cierre_proyectado": 23748292}, "AP25": {"partidos_jugados": [{"Jornada": 1, "Views": 155762, "Categoria": "B", "Local": "Necaxa", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 1, "Views": 626949, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul"}, {"Jornada": 1, "Views": 260160, "Categoria": "AA", "Local": "Pumas", "Visitante": "Rayadas"}, {"Jornada": 2, "Views": 186097, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atlas"}, {"Jornada": 2, "Views": 162660, "Categoria": "A", "Local": "Toluca", "Visitante": "Santos"}, {"Jornada": 2, "Views": 545277, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Tijuana"}, {"Jornada": 3, "Views": 187114, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 3, "Views": 139687, "Categoria": "A", "Local": "Pumas", "Visitante": "Necaxa"}, {"Jornada": 3, "Views": 261796, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 4, "Views": 120174, "Categoria": "A", "Local": "Necaxa", "Visitante": "Le\u00f3n"}, {"Jornada": 4, "Views": 362701, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Quer\u00e9taro"}, {"Jornada": 4, "Views": 231424, "Categoria": "A", "Local": "Pumas", "Visitante": "Cruz Azul"}, {"Jornada": 5, "Views": 248749, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 5, "Views": 396200, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 5, "Views": 82441, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 100335, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 80845, "Categoria": "A", "Local": "Toluca", "Visitante": "Le\u00f3n"}, {"Jornada": 5, "Views": 110641, "Categoria": "A", "Local": "Toluca", "Visitante": "Le\u00f3n"}, {"Jornada": 6, "Views": 308136, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 6, "Views": 692232, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Puebla"}, {"Jornada": 6, "Views": 240983, "Categoria": "AA", "Local": "Toluca", "Visitante": "Chivas"}, {"Jornada": 7, "Views": 182951, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Santos"}, {"Jornada": 7, "Views": 393026, "Categoria": "AA", "Local": "Pumas", "Visitante": "Am\u00e9rica"}, {"Jornada": 7, "Views": 231983, "Categoria": "A", "Local": "Necaxa", "Visitante": "Cruz Azul"}, {"Jornada": 8, "Views": 278126, "Categoria": "A", "Local": "Pumas", "Visitante": "Tijuana"}, {"Jornada": 8, "Views": 165768, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Toluca"}, {"Jornada": 8, "Views": 554536, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Santos"}, {"Jornada": 9, "Views": 214908, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Juarez"}, {"Jornada": 9, "Views": 237503, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Le\u00f3n"}, {"Jornada": 9, "Views": 140595, "Categoria": "A", "Local": "Toluca", "Visitante": "Quer\u00e9taro"}, {"Jornada": 10, "Views": 316304, "Categoria": "A", "Local": "Pumas", "Visitante": "Toluca"}, {"Jornada": 10, "Views": 448388, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 150981, "Categoria": "B", "Local": "Necaxa", "Visitante": "Puebla"}, {"Jornada": 11, "Views": 327215, "Categoria": "AA", "Local": "Toluca", "Visitante": "Rayadas"}, {"Jornada": 11, "Views": 294372, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Juarez"}, {"Jornada": 11, "Views": 543536, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 12, "Views": 130079, "Categoria": "A", "Local": "Necaxa", "Visitante": "Atlas"}, {"Jornada": 12, "Views": 730655, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 12, "Views": 313857, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 13, "Views": 416906, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 12, "Views": 257985, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 13, "Views": 96873, "Categoria": "A", "Local": "Pumas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 13, "Views": 230181, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Rayadas"}, {"Jornada": 14, "Views": 116388, "Categoria": "A", "Local": "Toluca", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 14, "Views": 201757, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Tijuana"}, {"Jornada": 14, "Views": 829368, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 15, "Views": 889682, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 15, "Views": 176889, "Categoria": "A", "Local": "Pumas", "Visitante": "Atlas"}, {"Jornada": 15, "Views": 157173, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Santos"}, {"Jornada": 16, "Views": 240085, "Categoria": "A", "Local": "Pumas", "Visitante": "Juarez"}, {"Jornada": 16, "Views": 195434, "Categoria": "A", "Local": "Necaxa", "Visitante": "Toluca"}, {"Jornada": 16, "Views": 192216, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Le\u00f3n"}, {"Jornada": 17, "Views": 288928, "Categoria": "A", "Local": "Toluca", "Visitante": "Puebla"}, {"Jornada": 17, "Views": 218192, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Atlas"}, {"Jornada": 17, "Views": 321367, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}, {"Jornada": 18, "Views": 782401, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Pachuca"}, {"Jornada": 18, "Views": 1189018, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 18, "Views": 806338, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 18, "Views": 697313, "Categoria": "AA", "Local": "Toluca", "Visitante": "Chivas"}, {"Jornada": 19, "Views": 1337140, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 20, "Views": 2518529, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 20, "Views": 3096809, "Categoria": "AAA", "Local": "Tigres", "Visitante": "Am\u00e9rica"}, {"Jornada": 19, "Views": 1644378, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}], "partidos_totales_calendario": [{"Jornada": 1, "Views": 155762, "Categoria": "B", "Local": "Necaxa", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 1, "Views": 626949, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul"}, {"Jornada": 1, "Views": 260160, "Categoria": "AA", "Local": "Pumas", "Visitante": "Rayadas"}, {"Jornada": 2, "Views": 186097, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atlas"}, {"Jornada": 2, "Views": 162660, "Categoria": "A", "Local": "Toluca", "Visitante": "Santos"}, {"Jornada": 2, "Views": 545277, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Tijuana"}, {"Jornada": 3, "Views": 187114, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 3, "Views": 139687, "Categoria": "A", "Local": "Pumas", "Visitante": "Necaxa"}, {"Jornada": 3, "Views": 261796, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 4, "Views": 120174, "Categoria": "A", "Local": "Necaxa", "Visitante": "Le\u00f3n"}, {"Jornada": 4, "Views": 362701, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Quer\u00e9taro"}, {"Jornada": 4, "Views": 231424, "Categoria": "A", "Local": "Pumas", "Visitante": "Cruz Azul"}, {"Jornada": 5, "Views": 248749, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 5, "Views": 396200, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Am\u00e9rica"}, {"Jornada": 5, "Views": 82441, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 100335, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 80845, "Categoria": "A", "Local": "Toluca", "Visitante": "Le\u00f3n"}, {"Jornada": 5, "Views": 110641, "Categoria": "A", "Local": "Toluca", "Visitante": "Le\u00f3n"}, {"Jornada": 6, "Views": 308136, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 6, "Views": 692232, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Puebla"}, {"Jornada": 6, "Views": 240983, "Categoria": "AA", "Local": "Toluca", "Visitante": "Chivas"}, {"Jornada": 7, "Views": 182951, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Santos"}, {"Jornada": 7, "Views": 393026, "Categoria": "AA", "Local": "Pumas", "Visitante": "Am\u00e9rica"}, {"Jornada": 7, "Views": 231983, "Categoria": "A", "Local": "Necaxa", "Visitante": "Cruz Azul"}, {"Jornada": 8, "Views": 278126, "Categoria": "A", "Local": "Pumas", "Visitante": "Tijuana"}, {"Jornada": 8, "Views": 165768, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Toluca"}, {"Jornada": 8, "Views": 554536, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Santos"}, {"Jornada": 9, "Views": 214908, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Juarez"}, {"Jornada": 9, "Views": 237503, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Le\u00f3n"}, {"Jornada": 9, "Views": 140595, "Categoria": "A", "Local": "Toluca", "Visitante": "Quer\u00e9taro"}, {"Jornada": 10, "Views": 316304, "Categoria": "A", "Local": "Pumas", "Visitante": "Toluca"}, {"Jornada": 10, "Views": 448388, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 150981, "Categoria": "B", "Local": "Necaxa", "Visitante": "Puebla"}, {"Jornada": 11, "Views": 327215, "Categoria": "AA", "Local": "Toluca", "Visitante": "Rayadas"}, {"Jornada": 11, "Views": 294372, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Juarez"}, {"Jornada": 11, "Views": 543536, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 12, "Views": 130079, "Categoria": "A", "Local": "Necaxa", "Visitante": "Atlas"}, {"Jornada": 12, "Views": 730655, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 12, "Views": 313857, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 13, "Views": 416906, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 12, "Views": 257985, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 13, "Views": 96873, "Categoria": "A", "Local": "Pumas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 13, "Views": 230181, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Rayadas"}, {"Jornada": 14, "Views": 116388, "Categoria": "A", "Local": "Toluca", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 14, "Views": 201757, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Tijuana"}, {"Jornada": 14, "Views": 829368, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 15, "Views": 889682, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 15, "Views": 176889, "Categoria": "A", "Local": "Pumas", "Visitante": "Atlas"}, {"Jornada": 15, "Views": 157173, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Santos"}, {"Jornada": 16, "Views": 240085, "Categoria": "A", "Local": "Pumas", "Visitante": "Juarez"}, {"Jornada": 16, "Views": 195434, "Categoria": "A", "Local": "Necaxa", "Visitante": "Toluca"}, {"Jornada": 16, "Views": 192216, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Le\u00f3n"}, {"Jornada": 17, "Views": 288928, "Categoria": "A", "Local": "Toluca", "Visitante": "Puebla"}, {"Jornada": 17, "Views": 218192, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Atlas"}, {"Jornada": 17, "Views": 321367, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}, {"Jornada": 18, "Views": 782401, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Pachuca"}, {"Jornada": 18, "Views": 1189018, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 18, "Views": 806338, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 18, "Views": 697313, "Categoria": "AA", "Local": "Toluca", "Visitante": "Chivas"}, {"Jornada": 19, "Views": 1337140, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Chivas"}, {"Jornada": 20, "Views": 2518529, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 20, "Views": 3096809, "Categoria": "AAA", "Local": "Tigres", "Visitante": "Am\u00e9rica"}, {"Jornada": 19, "Views": 1644378, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}], "es_actual": false, "cierre_proyectado": 28056496}, "CL26": {"partidos_jugados": [{"Jornada": 12, "Views": 140470, "Categoria": "A", "Local": "Necaxa", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 1, "Views": 244976, "Categoria": "A", "Local": "Pumas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 1, "Views": 318334, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Tigres"}, {"Jornada": 1, "Views": 251872, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Puebla"}, {"Jornada": 1, "Views": 143059, "Categoria": "A", "Local": "Toluca", "Visitante": "Tijuana"}, {"Jornada": 2, "Views": 778057, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Chivas"}, {"Jornada": 2, "Views": 257054, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Necaxa"}, {"Jornada": 2, "Views": 239926, "Categoria": "A", "Local": "Toluca", "Visitante": "Atlas"}, {"Jornada": 3, "Views": 422207, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Pachuca"}, {"Jornada": 3, "Views": 254995, "Categoria": "A", "Local": "Pumas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 3, "Views": 438650, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Necaxa"}, {"Jornada": 4, "Views": 150352, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pumas"}, {"Jornada": 4, "Views": 278346, "Categoria": "AA", "Local": "Toluca", "Visitante": "Tigres"}, {"Jornada": 4, "Views": 354370, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Cruz Azul"}, {"Jornada": 5, "Views": 147195, "Categoria": "A", "Local": "Pumas", "Visitante": "Santos"}, {"Jornada": 5, "Views": 512012, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 173646, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pachuca"}, {"Jornada": 6, "Views": 251984, "Categoria": "AA", "Local": "Toluca", "Visitante": "Juarez"}, {"Jornada": 6, "Views": 127009, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Quer\u00e9taro"}, {"Jornada": 6, "Views": 313661, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Pumas"}, {"Jornada": 7, "Views": 136447, "Categoria": "A", "Local": "Toluca", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 7, "Views": 441249, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Chivas"}, {"Jornada": 7, "Views": 173567, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Tijuana"}, {"Jornada": 8, "Views": 1156453, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Am\u00e9rica"}, {"Jornada": 8, "Views": 840807, "Categoria": "AA", "Local": "Pumas", "Visitante": "Chivas"}, {"Jornada": 8, "Views": 203627, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Toluca"}, {"Jornada": 9, "Views": 112143, "Categoria": "B", "Local": "Necaxa", "Visitante": "Santos"}, {"Jornada": 9, "Views": 454315, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 9, "Views": 167058, "Categoria": "AA", "Local": "Toluca", "Visitante": "Pachuca"}, {"Jornada": 10, "Views": 358328, "Categoria": "AA", "Local": "Pumas", "Visitante": "Tigres"}, {"Jornada": 10, "Views": 182167, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 86363, "Categoria": "A", "Local": "Necaxa", "Visitante": "Quer\u00e9taro"}, {"Jornada": 11, "Views": 315329, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Necaxa"}, {"Jornada": 11, "Views": 303393, "Categoria": "A", "Local": "Toluca", "Visitante": "Pumas"}, {"Jornada": 11, "Views": 678599, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Le\u00f3n"}, {"Jornada": 12, "Views": 666510, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Toluca"}, {"Jornada": 13, "Views": 290436, "Categoria": "A", "Local": "Toluca", "Visitante": "Necaxa"}, {"Jornada": 13, "Views": 313641, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Chivas"}, {"Jornada": 13, "Views": 185418, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 13, "Views": 153604, "Categoria": "AA", "Local": "Pumas", "Visitante": "Pachuca"}, {"Jornada": 14, "Views": 225487, "Categoria": "A", "Local": "Pumas", "Visitante": "Le\u00f3n"}, {"Jornada": 14, "Views": 213083, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Puebla"}, {"Jornada": 15, "Views": 155802, "Categoria": "A", "Local": "Necaxa", "Visitante": "Juarez"}, {"Jornada": 15, "Views": 510025, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atlas"}, {"Jornada": 15, "Views": 303790, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pumas"}, {"Jornada": 16, "Views": 423127, "Categoria": "A", "Local": "Toluca", "Visitante": "Cruz Azul"}, {"Jornada": 16, "Views": 179878, "Categoria": "A", "Local": "Pumas", "Visitante": "Puebla"}, {"Jornada": 16, "Views": 133302, "Categoria": "A", "Local": "Necaxa", "Visitante": "Tijuana"}, {"Jornada": 17, "Views": 402000, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Pachuca"}, {"Jornada": 17, "Views": 522330, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 17, "Views": 249998, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Pumas"}, {"Jornada": 18, "Views": 618186, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 18, "Views": 677111, "Categoria": "AA", "Local": "Toluca", "Visitante": "Tigres"}, {"Jornada": 18, "Views": 545840, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 18, "Views": 631109, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Cruz Azul"}, {"Jornada": 19, "Views": 1607807, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 19, "Views": 897734, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Toluca"}, {"Jornada": 19, "Views": 493680, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 20, "Views": 2596924, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 20, "Views": 1641399, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}], "partidos_totales_calendario": [{"Jornada": 12, "Views": 140470, "Categoria": "A", "Local": "Necaxa", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 1, "Views": 244976, "Categoria": "A", "Local": "Pumas", "Visitante": "Quer\u00e9taro"}, {"Jornada": 1, "Views": 318334, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Tigres"}, {"Jornada": 1, "Views": 251872, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Puebla"}, {"Jornada": 1, "Views": 143059, "Categoria": "A", "Local": "Toluca", "Visitante": "Tijuana"}, {"Jornada": 2, "Views": 778057, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Chivas"}, {"Jornada": 2, "Views": 257054, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Necaxa"}, {"Jornada": 2, "Views": 239926, "Categoria": "A", "Local": "Toluca", "Visitante": "Atlas"}, {"Jornada": 3, "Views": 422207, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Pachuca"}, {"Jornada": 3, "Views": 254995, "Categoria": "A", "Local": "Pumas", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 3, "Views": 438650, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Necaxa"}, {"Jornada": 4, "Views": 150352, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pumas"}, {"Jornada": 4, "Views": 278346, "Categoria": "AA", "Local": "Toluca", "Visitante": "Tigres"}, {"Jornada": 4, "Views": 354370, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Cruz Azul"}, {"Jornada": 5, "Views": 147195, "Categoria": "A", "Local": "Pumas", "Visitante": "Santos"}, {"Jornada": 5, "Views": 512012, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 5, "Views": 173646, "Categoria": "A", "Local": "Necaxa", "Visitante": "Pachuca"}, {"Jornada": 6, "Views": 251984, "Categoria": "AA", "Local": "Toluca", "Visitante": "Juarez"}, {"Jornada": 6, "Views": 127009, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Quer\u00e9taro"}, {"Jornada": 6, "Views": 313661, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Pumas"}, {"Jornada": 7, "Views": 136447, "Categoria": "A", "Local": "Toluca", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 7, "Views": 441249, "Categoria": "AA", "Local": "Necaxa", "Visitante": "Chivas"}, {"Jornada": 7, "Views": 173567, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Tijuana"}, {"Jornada": 8, "Views": 1156453, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Am\u00e9rica"}, {"Jornada": 8, "Views": 840807, "Categoria": "AA", "Local": "Pumas", "Visitante": "Chivas"}, {"Jornada": 8, "Views": 203627, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Toluca"}, {"Jornada": 9, "Views": 112143, "Categoria": "B", "Local": "Necaxa", "Visitante": "Santos"}, {"Jornada": 9, "Views": 454315, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}, {"Jornada": 9, "Views": 167058, "Categoria": "AA", "Local": "Toluca", "Visitante": "Pachuca"}, {"Jornada": 10, "Views": 358328, "Categoria": "AA", "Local": "Pumas", "Visitante": "Tigres"}, {"Jornada": 10, "Views": 182167, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Atl\u00e9tico de San Luis"}, {"Jornada": 10, "Views": 86363, "Categoria": "A", "Local": "Necaxa", "Visitante": "Quer\u00e9taro"}, {"Jornada": 11, "Views": 315329, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Necaxa"}, {"Jornada": 11, "Views": 303393, "Categoria": "A", "Local": "Toluca", "Visitante": "Pumas"}, {"Jornada": 11, "Views": 678599, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Le\u00f3n"}, {"Jornada": 12, "Views": 666510, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Toluca"}, {"Jornada": 13, "Views": 290436, "Categoria": "A", "Local": "Toluca", "Visitante": "Necaxa"}, {"Jornada": 13, "Views": 313641, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Chivas"}, {"Jornada": 13, "Views": 185418, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Mazatl\u00e1n"}, {"Jornada": 13, "Views": 153604, "Categoria": "AA", "Local": "Pumas", "Visitante": "Pachuca"}, {"Jornada": 14, "Views": 225487, "Categoria": "A", "Local": "Pumas", "Visitante": "Le\u00f3n"}, {"Jornada": 14, "Views": 213083, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Puebla"}, {"Jornada": 15, "Views": 155802, "Categoria": "A", "Local": "Necaxa", "Visitante": "Juarez"}, {"Jornada": 15, "Views": 510025, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atlas"}, {"Jornada": 15, "Views": 303790, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pumas"}, {"Jornada": 16, "Views": 423127, "Categoria": "A", "Local": "Toluca", "Visitante": "Cruz Azul"}, {"Jornada": 16, "Views": 179878, "Categoria": "A", "Local": "Pumas", "Visitante": "Puebla"}, {"Jornada": 16, "Views": 133302, "Categoria": "A", "Local": "Necaxa", "Visitante": "Tijuana"}, {"Jornada": 17, "Views": 402000, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Pachuca"}, {"Jornada": 17, "Views": 522330, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Tigres"}, {"Jornada": 17, "Views": 249998, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Pumas"}, {"Jornada": 18, "Views": 618186, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Rayadas"}, {"Jornada": 18, "Views": 677111, "Categoria": "AA", "Local": "Toluca", "Visitante": "Tigres"}, {"Jornada": 18, "Views": 545840, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Juarez"}, {"Jornada": 18, "Views": 631109, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Cruz Azul"}, {"Jornada": 19, "Views": 1607807, "Categoria": "AA", "Local": "Toluca", "Visitante": "Am\u00e9rica"}, {"Jornada": 19, "Views": 897734, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Toluca"}, {"Jornada": 19, "Views": 493680, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Pachuca"}, {"Jornada": 20, "Views": 2596924, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 20, "Views": 1641399, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Rayadas"}], "es_actual": false, "cierre_proyectado": 26046241}, "AP26": {"partidos_jugados": [{"Jornada": 1, "Views": 266654, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atlas"}, {"Jornada": 1, "Views": 397744, "Categoria": "A", "Local": "Pumas", "Visitante": "Le\u00f3n"}, {"Jornada": 1, "Views": 226529, "Categoria": "B", "Local": "Atlante", "Visitante": "Necaxa"}, {"Jornada": 2, "Views": 585585, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Cruz Azul"}, {"Jornada": 2, "Views": 168978, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Atlante"}, {"Jornada": 2, "Views": 221623, "Categoria": "AA", "Local": "Puebla", "Visitante": "Chivas"}, {"Jornada": 2, "Views": 195329, "Categoria": "AA", "Local": "Toluca", "Visitante": "Juarez"}, {"Jornada": 3, "Views": 311918, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Atlante"}, {"Jornada": 3, "Views": 570944, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Puebla"}, {"Jornada": 3, "Views": 169556, "Categoria": "A", "Local": "Toluca", "Visitante": "Atlas"}, {"Jornada": 4, "Views": 134191, "Categoria": "A", "Local": "Pumas", "Visitante": "Queretaro"}, {"Jornada": 4, "Views": 172559, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Le\u00f3n"}, {"Jornada": 4, "Views": 286104, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Tigres"}, {"Jornada": 4, "Views": 105998, "Categoria": "A", "Local": "Puebla", "Visitante": "San Luis"}, {"Jornada": 4, "Views": 178113, "Categoria": "A", "Local": "Atlante", "Visitante": "Toluca"}, {"Jornada": 5, "Views": 271120, "Categoria": "A", "Local": "Toluca", "Visitante": "Le\u00f3n"}, {"Jornada": 5, "Views": 141141, "Categoria": "B", "Local": "Puebla", "Visitante": "Necaxa"}, {"Jornada": 5, "Views": 709588, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Xolos"}, {"Jornada": 5, "Views": 122879, "Categoria": "A", "Local": "San Luis", "Visitante": "Atlas"}, {"Jornada": 6, "Views": 759015, "Categoria": "AA", "Local": "Pumas", "Visitante": "Am\u00e9rica"}, {"Jornada": 6, "Views": 194587, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Toluca"}, {"Jornada": 6, "Views": 187252, "Categoria": "A", "Local": "Atlante", "Visitante": "Juarez"}, {"Jornada": 7, "Views": 381611, "Categoria": "A", "Local": "Cruz Azul", "Visitante": "Pumas"}, {"Jornada": 7, "Views": 217085, "Categoria": "B", "Local": "Puebla", "Visitante": "Queretaro"}, {"Jornada": 7, "Views": 962254, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Tigres"}, {"Jornada": 7, "Views": 158327, "Categoria": "A", "Local": "San Luis", "Visitante": "Santos"}, {"Jornada": 7, "Views": 227364, "Categoria": "A", "Local": "Toluca", "Visitante": "Xolos"}, {"Jornada": 8, "Views": 357293, "Categoria": "A", "Local": "Rayadas", "Visitante": "Necaxa"}, {"Jornada": 8, "Views": 217334, "Categoria": "A", "Local": "Pumas", "Visitante": "Puebla"}, {"Jornada": 8, "Views": 803795, "Categoria": "AA", "Local": "Am\u00e9rica", "Visitante": "Atlas"}, {"Jornada": 8, "Views": 208077, "Categoria": "A", "Local": "San Luis", "Visitante": "Pachuca"}, {"Jornada": 8, "Views": 210221, "Categoria": "A", "Local": "Atlante", "Visitante": "Queretaro"}, {"Jornada": 8, "Views": 421907, "Categoria": "AA", "Local": "Toluca", "Visitante": "Tigres"}, {"Jornada": 9, "Views": 746011, "Categoria": "AA", "Local": "Cruz Azul", "Visitante": "Chivas"}, {"Jornada": 9, "Views": 306472, "Categoria": "AA", "Local": "Puebla", "Visitante": "Rayadas"}, {"Jornada": 9, "Views": 238335, "Categoria": "A", "Local": "Atlante", "Visitante": "Pumas"}, {"Jornada": 10, "Views": 418266, "Categoria": "AA", "Local": "Pumas", "Visitante": "Tigres"}, {"Jornada": 10, "Views": 1844660, "Categoria": "AAA", "Local": "Rayadas", "Visitante": "Am\u00e9rica"}, {"Jornada": 11, "Views": 208873, "Categoria": "A", "Local": "Puebla", "Visitante": "Xolos"}, {"Jornada": 11, "Views": 542101, "Categoria": "AA", "Local": "Rayadas", "Visitante": "Cruz Azul"}, {"Jornada": 11, "Views": 213535, "Categoria": "A", "Local": "Pumas", "Visitante": "Atlas"}, {"Jornada": 11, "Views": 194343, "Categoria": "A", "Local": "San Luis", "Visitante": "Juarez"}, {"Jornada": 11, "Views": 705131, "Categoria": "AAA", "Local": "Am\u00e9rica", "Visitante": "Pachuca"}, {"Jornada": 11, "Views": 216331, "Categoria": "A", "Local": "Toluca", "Visitante": "Santos"}], "partidos_totales_calendario": [{"Categoria": "A", "Views": 266654}, {"Categoria": "A", "Views": 397744}, {"Categoria": "B", "Views": 226529}, {"Categoria": "AA", "Views": 585585}, {"Categoria": "AA", "Views": 168978}, {"Categoria": "AA", "Views": 221623}, {"Categoria": "AA", "Views": 195329}, {"Categoria": "A", "Views": 311918}, {"Categoria": "AA", "Views": 570944}, {"Categoria": "A", "Views": 169556}, {"Categoria": "A", "Views": 134191}, {"Categoria": "AA", "Views": 172559}, {"Categoria": "AA", "Views": 286104}, {"Categoria": "A", "Views": 105998}, {"Categoria": "A", "Views": 178113}, {"Categoria": "A", "Views": 271120}, {"Categoria": "B", "Views": 141141}, {"Categoria": "AA", "Views": 709588}, {"Categoria": "A", "Views": 122879}, {"Categoria": "AA", "Views": 759015}, {"Categoria": "AA", "Views": 194587}, {"Categoria": "A", "Views": 187252}, {"Categoria": "A", "Views": 381611}, {"Categoria": "B", "Views": 217085}, {"Categoria": "AAA", "Views": 962254}, {"Categoria": "A", "Views": 158327}, {"Categoria": "A", "Views": 227364}, {"Categoria": "A", "Views": 357293}, {"Categoria": "A", "Views": 217334}, {"Categoria": "AA", "Views": 803795}, {"Categoria": "A", "Views": 208077}, {"Categoria": "A", "Views": 210221}, {"Categoria": "AA", "Views": 421907}, {"Categoria": "AA", "Views": 746011}, {"Categoria": "AA", "Views": 306472}, {"Categoria": "A", "Views": 238335}, {"Categoria": "AA", "Views": 418266}, {"Categoria": "AAA", "Views": 1844660}, {"Categoria": "A", "Views": 208873}, {"Categoria": "AA", "Views": 542101}, {"Categoria": "A", "Views": 213535}, {"Categoria": "A", "Views": 194343}, {"Categoria": "AAA", "Views": 705131}, {"Categoria": "A", "Views": 216331}, {"Categoria": "AA", "Views": 543688}, {"Categoria": "AA", "Views": 438800}, {"Categoria": "AA", "Views": 311152}, {"Categoria": "AA", "Views": 514019}, {"Categoria": "AA", "Views": 254271}, {"Categoria": "A", "Views": 179284}, {"Categoria": "AA", "Views": 597971}, {"Categoria": "AA", "Views": 312663}, {"Categoria": "A", "Views": 246678}, {"Categoria": "A", "Views": 219375}], "jornadas_hist_override": {"1": 296975.6666666667, "2": 292878.75, "3": 350806.0, "4": 175393.0, "5": 311182.0, "6": 380284.6666666667, "7": 389328.2, "8": 369771.1666666667, "9": 430272.6666666667, "10": 1131463.0, "11": 345885.6666666667}, "es_actual": true, "cierre_proyectado": 19794634}}};
         const formatNum = (num) => new Intl.NumberFormat('es-MX').format(Math.round(num));
+
+        // NAVEGACIÓN ENTRE HOJA 1 Y HOJA 2
+        window.switchTab = function(tabIdx) {
+            document.getElementById('tab-1').classList.toggle('active', tabIdx === 1);
+            document.getElementById('tab-2').classList.toggle('active', tabIdx === 2);
+            document.getElementById('btn-tab1').classList.toggle('active', tabIdx === 1);
+            document.getElementById('btn-tab2').classList.toggle('active', tabIdx === 2);
+            if (tabIdx === 2) updateBenchmark();
+            else updateDashboard();
+        };
+
+        // =====================================================================
+        // LÓGICA HOJA 1: MONITOREO Y ROLLING FORECAST DINÁMICO
+        // =====================================================================
         let activeCat = null;
         const jornadas = [...new Set(datos.map(d => d.Jornada))];
-        jornadas.sort((a, b) => { const numA = parseInt(String(a).replace(/\D/g, '')); const numB = parseInt(String(b).replace(/\D/g, '')); if (!isNaN(numA) && !isNaN(numB)) return numA - numB; return String(a).localeCompare(String(b)); });
+        jornadas.sort((a, b) => {
+            const numA = parseInt(String(a).replace(/\D/g, ''));
+            const numB = parseInt(String(b).replace(/\D/g, ''));
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return String(a).localeCompare(String(b));
+        });
         const selectJornada = document.getElementById('jornadaSelect');
         jornadas.forEach(j => { let opt = document.createElement('option'); opt.value = j; opt.textContent = j; selectJornada.appendChild(opt); });
         const equipos = [...new Set(datos.map(d => d.Local))].sort();
@@ -164,9 +253,13 @@
         let chart;
 
         function getTagClass(cat) { if(cat === 'AAA') return 'tag-AAA'; if(cat === 'AA') return 'tag-AA'; if(cat === 'A') return 'tag-A'; return 'tag-B'; }
-        function getStatus(d) { if (d.Views_Reales === null) return `<span class="status-pend">⏳ Pendiente</span>`; if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Corto </span>`; if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Arriba </span>`; return `<span class="status-ok">🔵 En Rango </span>`; }
+        function getStatus(d) {
+            if (d.Views_Reales === null) return `<span class="status-pend">⏳ Pendiente</span>`;
+            if (d.Views_Reales < d.P25) return `<span class="status-low">🔴 Corto </span>`;
+            if (d.Views_Reales > d.P75) return `<span class="status-high">🟢 Arriba </span>`;
+            return `<span class="status-ok">🔵 En Rango </span>`;
+        }
 
-        // GENERADOR DE CAMPANA DE GAUSS SVG
         function getGaussianSVG(pct) {
             let pts = [];
             for(let i=0; i<=100; i+=2) {
@@ -175,7 +268,6 @@
                 pts.push(`${i},${y}`);
             }
             let pathD = `M 0 35 L ${pts.join(' L ')} L 100 35 Z`;
-
             let dotX = Math.max(3, Math.min(97, pct / 2));
             let dotZ = (dotX - 50) / 20;
             let dotY = 35 - (30 * Math.exp(-0.5 * dotZ * dotZ));
@@ -189,15 +281,18 @@
                     <text x="50" y="44" font-size="7" font-family="sans-serif" font-weight="bold" fill="#7f8c8d" text-anchor="middle">META</text>
                     <circle cx="${dotX}" cy="${dotY}" r="4" fill="${color}" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.3));"/>
                 </svg>
-            </div>
-            `;
+            </div>`;
         }
 
         window.toggleCat = function(cat) {
             activeCat = (activeCat === cat) ? null : cat;
-            ['AAA', 'AA', 'A', 'B'].forEach(c => { const box = document.getElementById('box-' + c); if (activeCat === c) box.classList.add('active'); else box.classList.remove('active'); });
+            ['AAA', 'AA', 'A', 'B'].forEach(c => {
+                const box = document.getElementById('box-' + c);
+                if (activeCat === c) box.classList.add('active');
+                else box.classList.remove('active');
+            });
             updateDashboard();
-        }
+        };
 
         function updateDashboard() {
             const jorVal = selectJornada.value;
@@ -207,12 +302,31 @@
             if (eqVal !== "Todos") baseData = baseData.filter(d => d.Local === eqVal);
 
             const playedMatches = baseData.filter(d => d.Views_Reales !== null);
-            let totalReales = 0, sumProyectados = 0, sumP25 = 0, sumP75 = 0;
-            playedMatches.forEach(d => { totalReales += d.Views_Reales; });
-            baseData.forEach(d => { sumProyectados += d.Proyeccion_Views; sumP25 += d.P25; sumP75 += d.P75; });
 
-            const viewsFaltantes = sumProyectados - totalReales;
-            const pctTotal = sumProyectados > 0 ? Math.min((totalReales / sumProyectados) * 100, 100).toFixed(1) : 0;
+            // CÁLCULO DINÁMICO (ROLLING FORECAST):
+            // - Partidos jugados aportan su View Real exacto (varianza 0 -> su piso y techo son su View Real)
+            // - Partidos pendientes aportan su Proyección y su Rango P25 - P75
+            let totalReales = 0;
+            let sumProyectadosDinamico = 0;
+            let sumP25Dinamico = 0;
+            let sumP75Dinamico = 0;
+            let viewsFaltantes = 0;
+
+            baseData.forEach(d => {
+                if (d.Views_Reales !== null) {
+                    totalReales += d.Views_Reales;
+                    sumProyectadosDinamico += d.Views_Reales;
+                    sumP25Dinamico += d.Views_Reales;
+                    sumP75Dinamico += d.Views_Reales;
+                } else {
+                    sumProyectadosDinamico += d.Proyeccion_Views;
+                    sumP25Dinamico += d.P25;
+                    sumP75Dinamico += d.P75;
+                    viewsFaltantes += d.Proyeccion_Views;
+                }
+            });
+
+            const pctTotal = sumProyectadosDinamico > 0 ? Math.min((totalReales / sumProyectadosDinamico) * 100, 100).toFixed(1) : 0;
             const totalAAA = baseData.filter(d => d.Categoria === 'AAA').length; const playedAAA = playedMatches.filter(d => d.Categoria === 'AAA').length;
             const totalAA = baseData.filter(d => d.Categoria === 'AA').length; const playedAA = playedMatches.filter(d => d.Categoria === 'AA').length;
             const totalA = baseData.filter(d => d.Categoria === 'A').length; const playedA = playedMatches.filter(d => d.Categoria === 'A').length;
@@ -225,9 +339,9 @@
             document.getElementById('kpiB').innerHTML = `${playedB} / ${totalB}`;
 
             document.getElementById('kpiRealTotal').innerHTML = `${formatNum(totalReales)} <span style="font-size:14px; color:#7f8c8d; font-weight:normal;">(${pctTotal}%)</span><div class="progress-bg"><div class="progress-fill" style="width: ${pctTotal}%;"></div></div>`;
-            document.getElementById('kpiProyTotal').innerHTML = formatNum(sumProyectados);
-            document.getElementById('kpiFaltantes').innerHTML = formatNum(viewsFaltantes > 0 ? viewsFaltantes : 0);
-            document.getElementById('kpiRango').innerHTML = `${formatNum(sumP25)} - ${formatNum(sumP75)}`;
+            document.getElementById('kpiProyTotal').innerHTML = formatNum(sumProyectadosDinamico);
+            document.getElementById('kpiFaltantes').innerHTML = formatNum(viewsFaltantes);
+            document.getElementById('kpiRango').innerHTML = `${formatNum(sumP25Dinamico)} - ${formatNum(sumP75Dinamico)}`;
 
             let displayData = activeCat ? baseData.filter(d => d.Categoria === activeCat) : baseData;
             const teamAgg = {};
@@ -261,21 +375,501 @@
                         </tr>`;
             }).join('');
 
+            // En la tabla inferior se mantiene la suma de la Proyección Inicial Estática como referencia
             let tableSumProyectados = 0, tableSumP25 = 0, tableSumP75 = 0, tableTotalReales = 0;
-            displayData.forEach(d => { tableSumProyectados += d.Proyeccion_Views; tableSumP25 += d.P25; tableSumP75 += d.P75; if (d.Views_Reales !== null) tableTotalReales += d.Views_Reales; });
+            displayData.forEach(d => {
+                tableSumProyectados += d.Proyeccion_Views;
+                tableSumP25 += d.P25;
+                tableSumP75 += d.P75;
+                if (d.Views_Reales !== null) tableTotalReales += d.Views_Reales;
+            });
 
             let rowsHtml = displayData.map(d => `<tr><td>${d.Jornada}</td><td><strong>${d.Local}</strong></td><td>${d.Visitante}</td><td><span class="${getTagClass(d.Categoria)}">${d.Categoria}</span></td><td style="color:#2980b9; font-weight:bold;">${formatNum(d.Proyeccion_Views)}</td><td style="color: #7f8c8d; font-size: 13px;">${formatNum(d.P25)} - ${formatNum(d.P75)}</td><td style="font-weight:bold; color: #2c3e50;">${d.Views_Reales !== null ? formatNum(d.Views_Reales) : '-'}</td><td>${getStatus(d)}</td></tr>`).join('');
-            rowsHtml += `<tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 15px;">TOTAL EN PANTALLA:</td><td></td><td>${formatNum(tableSumProyectados)}</td><td>${formatNum(tableSumP25)} - ${formatNum(tableSumP75)}</td><td>${formatNum(tableTotalReales)}</td><td>-</td></tr>`;
+            rowsHtml += `<tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 15px;">TOTAL EN PANTALLA (PROY. INICIAL):</td><td></td><td>${formatNum(tableSumProyectados)}</td><td>${formatNum(tableSumP25)} - ${formatNum(tableSumP75)}</td><td>${formatNum(tableTotalReales)}</td><td>-</td></tr>`;
             document.getElementById('matchesTable').innerHTML = rowsHtml;
 
             if (chart) chart.destroy();
             chart = new Chart(document.getElementById('viewsChart').getContext('2d'), {
                 type: 'bar',
-                data: { labels: displayData.map(d => d.Local.substring(0,3) + " v " + d.Visitante.substring(0,3)), datasets: [ { type: 'line', label: 'Views Reales', data: displayData.map(d => d.Views_Reales), borderColor: '#e74c3c', backgroundColor: '#e74c3c', pointRadius: 6, pointHoverRadius: 8, showLine: false, order: 1 }, { type: 'line', label: 'Proyección', data: displayData.map(d => d.Proyeccion_Views), borderColor: '#2980b9', backgroundColor: '#2980b9', pointStyle: 'rectRot', pointRadius: 5, showLine: false, order: 2 }, { type: 'bar', label: 'Rango Central (50%)', data: displayData.map(d => [d.P25, d.P75]), backgroundColor: 'rgba(189, 195, 199, 0.4)', borderColor: 'rgba(149, 165, 166, 0.5)', borderWidth: 1, order: 3 } ] },
+                data: {
+                    labels: displayData.map(d => d.Local.substring(0,3) + " v " + d.Visitante.substring(0,3)),
+                    datasets: [
+                        { type: 'line', label: 'Views Reales', data: displayData.map(d => d.Views_Reales), borderColor: '#e74c3c', backgroundColor: '#e74c3c', pointRadius: 6, pointHoverRadius: 8, showLine: false, order: 1 },
+                        { type: 'line', label: 'Proyección', data: displayData.map(d => d.Proyeccion_Views), borderColor: '#2980b9', backgroundColor: '#2980b9', pointStyle: 'rectRot', pointRadius: 5, showLine: false, order: 2 },
+                        { type: 'bar', label: 'Rango Central (50%)', data: displayData.map(d => [d.P25, d.P75]), backgroundColor: 'rgba(189, 195, 199, 0.4)', borderColor: 'rgba(149, 165, 166, 0.5)', borderWidth: 1, order: 3 }
+                    ]
+                },
                 options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
             });
         }
-        selectJornada.addEventListener('change', updateDashboard); selectEquipo.addEventListener('change', updateDashboard); updateDashboard();
+
+        selectJornada.addEventListener('change', updateDashboard);
+        selectEquipo.addEventListener('change', updateDashboard);
+
+        // =====================================================================
+        // LÓGICA HOJA 2: BENCHMARK MULTITORNEO
+        // =====================================================================
+        const paletteTorneos = {
+            'CL25': { solid: '#2b7bba', light: 'rgba(43, 123, 186, 0.22)', border: '#1d5a8a' },
+            'AP25': { solid: '#f58518', light: 'rgba(245, 133, 24, 0.22)', border: '#c46308' },
+            'CL26': { solid: '#399b35', light: 'rgba(57, 155, 53, 0.22)', border: '#277024' },
+            'AP26': { solid: '#cf3438', light: 'rgba(207, 52, 56, 0.22)', border: '#991f22' }
+        };
+        const defaultColors = ['#8e44ad', '#16a085', '#2c3e50', '#d35400'];
+
+        function getColorTorneo(t, idx) {
+            if (paletteTorneos[t]) return paletteTorneos[t];
+            const c = defaultColors[idx % defaultColors.length];
+            return { solid: c, light: 'rgba(127, 140, 141, 0.22)', border: c };
+        }
+
+        // Inicializar corte N con el número de partidos jugados en AP26
+        const jugadosAP26Count = (benchRaw.data['AP26'] && benchRaw.data['AP26'].partidos_jugados)
+            ? benchRaw.data['AP26'].partidos_jugados.length
+            : datos.filter(d => d.Views_Reales !== null).length;
+
+        const inputCorteN = document.getElementById('inputCorteN');
+        inputCorteN.value = jugadosAP26Count > 0 ? jugadosAP26Count : 44;
+
+        let chartBenchJor = null;
+        let chartBenchVol = null;
+        let chartBenchCat = null;
+        let chartBenchBox = null;
+
+        // Utilidad para calcular cuartiles y bigotes (1.5 IQR) de un arreglo de views
+        function calcBoxplotStats(arr) {
+            if (!arr || arr.length === 0) return { min: 0, q1: 0, med: 0, mean: 0, q3: 0, max: 0 };
+            const sorted = [...arr].sort((a, b) => a - b);
+            const quantile = (p) => {
+                const pos = (sorted.length - 1) * p;
+                const base = Math.floor(pos);
+                const rest = pos - base;
+                if (sorted[base + 1] !== undefined) return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+                return sorted[base];
+            };
+            const q1 = quantile(0.25);
+            const med = quantile(0.50);
+            const q3 = quantile(0.75);
+            const iqr = q3 - q1;
+            const lowFence = q1 - 1.5 * iqr;
+            const highFence = q3 + 1.5 * iqr;
+            const inside = sorted.filter(v => v >= lowFence && v <= highFence);
+            const minW = inside.length > 0 ? inside[0] : sorted[0];
+            const maxW = inside.length > 0 ? inside[inside.length - 1] : sorted[sorted.length - 1];
+            const mean = sorted.reduce((a, b) => a + b, 0) / sorted.length;
+            return { min: minW, q1, med, mean, q3, max: maxW };
+        }
+
+        window.updateBenchmark = function() {
+            const torneos = benchRaw.torneos_orden;
+            const corteN = parseInt(inputCorteN.value) || jugadosAP26Count || 44;
+            document.getElementById('badgeCorteInfo').textContent = `Comparando primeros ${corteN} partidos de cada torneo`;
+
+            // -----------------------------------------------------------------
+            // 1. GRÁFICO DE RENDIMIENTO PROMEDIO POR JORNADA
+            // -----------------------------------------------------------------
+            // Detectar máxima jornada regular jugada en AP26 (1 a 14)
+            let maxJorAP26 = 10;
+            const ap26Data = benchRaw.data['AP26'];
+            if (ap26Data) {
+                let jors = ap26Data.partidos_jugados.map(p => p.Jornada).filter(j => j !== null && j >= 1 && j <= 17);
+                if (ap26Data.jornadas_hist_override && Object.keys(ap26Data.jornadas_hist_override).length > 0) {
+                    const jorsHist = Object.keys(ap26Data.jornadas_hist_override).map(Number).filter(j => j >= 1 && j <= 17);
+                    jors = jors.concat(jorsHist);
+                }
+                if (jors.length > 0) maxJorAP26 = Math.max(...jors);
+            }
+
+            const chkVerJ17 = document.getElementById('chkVerJ17');
+            const lblAutoJ14 = document.getElementById('lblAutoJ14');
+            let limiteJornada = maxJorAP26;
+
+            // REGLA AUTOMÁTICA: Al llegar a la Jornada 14 en AP26, se desbloquean J15, J16 y J17 de torneos anteriores
+            if (maxJorAP26 >= 14) {
+                limiteJornada = 17;
+                chkVerJ17.checked = true;
+                lblAutoJ14.textContent = "(Activado automáticamente por llegar a J14)";
+            } else if (chkVerJ17.checked) {
+                limiteJornada = 17;
+                lblAutoJ14.textContent = `(Vista manual completa; AP26 va en J${maxJorAP26})`;
+            } else {
+                limiteJornada = maxJorAP26;
+                lblAutoJ14.textContent = `(Se activará en automático al llegar a J14; actual J${maxJorAP26})`;
+            }
+
+            document.getElementById('titleChartJornada').textContent =
+                `1. Rendimiento Promedio (Jornada 1 a ${limiteJornada})`;
+
+            const labelsJornadas = Array.from({ length: limiteJornada }, (_, i) => i + 1);
+            const datasetsJornada = torneos.map((t, idx) => {
+                const tObj = benchRaw.data[t];
+                const col = getColorTorneo(t, idx);
+                const dataPts = labelsJornadas.map(jNum => {
+                    // Si es AP26 y existe override histórico por jornada cuando el calendario no tiene número de jornada
+                    const matchesJ = tObj.partidos_jugados.filter(p => p.Jornada === jNum);
+                    if (matchesJ.length > 0) {
+                        return Math.round(matchesJ.reduce((acc, p) => acc + p.Views, 0) / matchesJ.length);
+                    }
+                    if (tObj.jornadas_hist_override && tObj.jornadas_hist_override[jNum] !== undefined) {
+                        return Math.round(tObj.jornadas_hist_override[jNum]);
+                    }
+                    return null;
+                });
+                return {
+                    label: t,
+                    data: dataPts,
+                    borderColor: col.solid,
+                    backgroundColor: col.solid,
+                    tension: 0.1,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2.2,
+                    spanGaps: false
+                };
+            });
+
+            if (chartBenchJor) chartBenchJor.destroy();
+            chartBenchJor = new Chart(document.getElementById('benchJornadaChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: labelsJornadas, datasets: datasetsJornada },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ctx.raw !== null ? `${ctx.dataset.label}: ${formatNum(ctx.raw)} views prom.` : 'Sin partidos'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Número de Jornada' } },
+                        y: { title: { display: true, text: 'Promedio de Views Totales (YT+FB)' }, beginAtZero: false }
+                    }
+                }
+            });
+
+            // -----------------------------------------------------------------
+            // 2. GRÁFICO DE VOLUMEN ACUMULADO (PRIMEROS N PARTIDOS VS TOTAL TORNEO ATRÁS)
+            // -----------------------------------------------------------------
+            document.getElementById('titleChartVolumen').textContent =
+                `2. Volumen Acumulado (Primeros ${corteN} Partidos vs. Total Torneo)`;
+
+            const acumuladosN = [];
+            const totalesTorneo = [];
+            const bgSolid = [];
+            const bgLight = [];
+            const borderColors = [];
+
+            torneos.forEach((t, idx) => {
+                const tObj = benchRaw.data[t];
+                const col = getColorTorneo(t, idx);
+                const primerosN = tObj.partidos_jugados.slice(0, corteN);
+                const sumN = primerosN.reduce((acc, p) => acc + p.Views, 0);
+                acumuladosN.push(sumN);
+                totalesTorneo.push(tObj.cierre_proyectado);
+                bgSolid.push(col.solid);
+                bgLight.push(col.light);
+                borderColors.push(col.border);
+            });
+
+            // Plugin para dibujar etiquetas de valor encima de ambas barras (Frontal y Trasera)
+            const dualBarLabelsPlugin = {
+                id: 'dualBarLabels',
+                afterDatasetsDraw(chartInstance) {
+                    const { ctx } = chartInstance;
+                    ctx.save();
+                    // Dataset 0 = Barra Trasera (Total / Cierre Proyectado)
+                    const metaBack = chartInstance.getDatasetMeta(0);
+                    metaBack.data.forEach((bar, i) => {
+                        const val = totalesTorneo[i];
+                        const isActual = benchRaw.data[torneos[i]].es_actual;
+                        ctx.font = 'bold 11px Segoe UI';
+                        ctx.fillStyle = '#555';
+                        ctx.textAlign = 'center';
+                        const tag = isActual ? `Proy: ${formatNum(val)}` : `Total: ${formatNum(val)}`;
+                        ctx.fillText(tag, bar.x, bar.y - 6);
+                    });
+                    // Dataset 1 = Barra Frontal (Acumulado N partidos)
+                    const metaFront = chartInstance.getDatasetMeta(1);
+                    metaFront.data.forEach((bar, i) => {
+                        const val = acumuladosN[i];
+                        ctx.font = 'bold 12px Segoe UI';
+                        ctx.fillStyle = '#111';
+                        ctx.textAlign = 'center';
+                        // Si las barras están muy cerca en altura, desplazamos la etiqueta frontal un poco hacia adentro
+                        const yBack = metaBack.data[i].y;
+                        const yPos = (Math.abs(bar.y - yBack) < 18) ? bar.y + 16 : bar.y - 5;
+                        if (Math.abs(bar.y - yBack) < 18) ctx.fillStyle = '#fff';
+                        ctx.fillText(formatNum(val), bar.x, yPos);
+                    });
+                    ctx.restore();
+                }
+            };
+
+            if (chartBenchVol) chartBenchVol.destroy();
+            chartBenchVol = new Chart(document.getElementById('benchVolumenChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: torneos,
+                    datasets: [
+                        {
+                            label: 'Total Torneo (En AP26 = Real + Proy. Pendiente)',
+                            data: totalesTorneo,
+                            backgroundColor: bgLight,
+                            borderColor: borderColors,
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            grouped: false,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: `Acumulado Primeros ${corteN} Partidos`,
+                            data: acumuladosN,
+                            backgroundColor: bgSolid,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                            grouped: false,
+                            barPercentage: 0.52,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${formatNum(ctx.raw)} views`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Views Totales' } }
+                    }
+                },
+                plugins: [dualBarLabelsPlugin]
+            });
+
+            // -----------------------------------------------------------------
+            // 3. GRÁFICO APILADO DE CATEGORÍAS DE PARTIDOS TRANSMITIDOS
+            // -----------------------------------------------------------------
+            const catMode = document.getElementById('selectCatMode').value;
+            const useAllMatches = catMode.startsWith('All');
+            const usePct = catMode.endsWith('Pct');
+
+            document.getElementById('titleChartCat').textContent = useAllMatches
+                ? `3. Mix de Categorías Transmitidas (Torneo Completo)`
+                : `3. Mix de Categorías Transmitidas (Primeros ${corteN} Partidos)`;
+
+            const categoriasOrden = ['AAA', 'AA', 'A', 'B'];
+            const catPalette = {
+                'AAA': { bg: '#ffcccc', border: '#c0392b', text: '#902116' },
+                'AA':  { bg: '#ffeaa7', border: '#d35400', text: '#9c3d00' },
+                'A':   { bg: '#dff9fb', border: '#2980b9', text: '#1b557a' },
+                'B':   { bg: '#dfe6e9', border: '#7f8c8d', text: '#4b5657' }
+            };
+
+            const countsMatrix = { 'AAA': [], 'AA': [], 'A': [], 'B': [] };
+            const pctMatrix = { 'AAA': [], 'AA': [], 'A': [], 'B': [] };
+
+            torneos.forEach(t => {
+                const tObj = benchRaw.data[t];
+                const sourceList = useAllMatches ? tObj.partidos_totales_calendario : tObj.partidos_jugados.slice(0, corteN);
+                const tot = sourceList.length || 1;
+                categoriasOrden.forEach(cat => {
+                    const c = sourceList.filter(p => p.Categoria === cat).length;
+                    countsMatrix[cat].push(c);
+                    pctMatrix[cat].push( Number(((c / tot) * 100).toFixed(1)) );
+                });
+            });
+
+            const stackedLabelsPlugin = {
+                id: 'stackedLabels',
+                afterDatasetsDraw(chartInstance) {
+                    const { ctx } = chartInstance;
+                    ctx.save();
+                    chartInstance.data.datasets.forEach((ds, dsIdx) => {
+                        const meta = chartInstance.getDatasetMeta(dsIdx);
+                        const catKey = ds.label;
+                        meta.data.forEach((bar, i) => {
+                            const countVal = countsMatrix[catKey][i];
+                            const pctVal = pctMatrix[catKey][i];
+                            if (countVal <= 0) return;
+                            const barHeight = Math.abs(bar.base - bar.y);
+                            if (barHeight < 14) return;
+                            ctx.font = 'bold 11px Segoe UI';
+                            ctx.fillStyle = catPalette[catKey].text;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            const labelTxt = usePct ? `${pctVal}% (${countVal})` : `${countVal}`;
+                            ctx.fillText(labelTxt, bar.x, (bar.y + bar.base) / 2);
+                        });
+                    });
+                    ctx.restore();
+                }
+            };
+
+            if (chartBenchCat) chartBenchCat.destroy();
+            chartBenchCat = new Chart(document.getElementById('benchCatChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: torneos,
+                    datasets: categoriasOrden.map(cat => ({
+                        label: cat,
+                        data: usePct ? pctMatrix[cat] : countsMatrix[cat],
+                        backgroundColor: catPalette[cat].bg,
+                        borderColor: catPalette[cat].border,
+                        borderWidth: 1.5
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const cat = ctx.dataset.label;
+                                    const i = ctx.dataIndex;
+                                    return `Cat ${cat}: ${countsMatrix[cat][i]} partidos (${pctMatrix[cat][i]}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            max: usePct ? 100 : undefined,
+                            title: { display: true, text: usePct ? '% de Partidos' : 'Cantidad de Partidos' }
+                        }
+                    }
+                },
+                plugins: [stackedLabelsPlugin]
+            });
+
+            // -----------------------------------------------------------------
+            // 4. GRÁFICO DE ESTABILIDAD DE AUDIENCIA (BOXPLOT AL PARTIDO N)
+            // -----------------------------------------------------------------
+            document.getElementById('titleChartBoxplot').textContent =
+                `4. Estabilidad de Audiencia (Primeros ${corteN} Partidos Transmitidos)`;
+
+            const boxStatsList = torneos.map(t => {
+                const primerosN = benchRaw.data[t].partidos_jugados.slice(0, corteN);
+                return calcBoxplotStats(primerosN.map(p => p.Views));
+            });
+
+            const whiskerPlugin = {
+                id: 'whiskerPlugin',
+                afterDatasetsDraw(chartInstance) {
+                    const { ctx, scales: { y } } = chartInstance;
+                    const meta = chartInstance.getDatasetMeta(0);
+                    ctx.save();
+                    meta.data.forEach((bar, i) => {
+                        const st = boxStatsList[i];
+                        if (!st || st.max === 0) return;
+                        const x = bar.x;
+                        const w = bar.width;
+                        const yMin = y.getPixelForValue(st.min);
+                        const yQ1  = y.getPixelForValue(st.q1);
+                        const yMed = y.getPixelForValue(st.med);
+                        const yMean = y.getPixelForValue(st.mean);
+                        const yQ3  = y.getPixelForValue(st.q3);
+                        const yMax = y.getPixelForValue(st.max);
+
+                        ctx.strokeStyle = '#2c3e50';
+                        ctx.lineWidth = 1.8;
+
+                        // Bigote superior (Q3 a Max)
+                        ctx.beginPath();
+                        ctx.moveTo(x, yQ3);
+                        ctx.lineTo(x, yMax);
+                        ctx.moveTo(x - w * 0.25, yMax);
+                        ctx.lineTo(x + w * 0.25, yMax);
+                        ctx.stroke();
+
+                        // Bigote inferior (Q1 a Min)
+                        ctx.beginPath();
+                        ctx.moveTo(x, yQ1);
+                        ctx.lineTo(x, yMin);
+                        ctx.moveTo(x - w * 0.25, yMin);
+                        ctx.lineTo(x + w * 0.25, yMin);
+                        ctx.stroke();
+
+                        // Línea de la Mediana (P50) dentro de la caja
+                        ctx.beginPath();
+                        ctx.lineWidth = 2.5;
+                        ctx.strokeStyle = '#1a252f';
+                        ctx.moveTo(x - w / 2, yMed);
+                        ctx.lineTo(x + w / 2, yMed);
+                        ctx.stroke();
+
+                        // Punto blanco para el Promedio (Media)
+                        ctx.beginPath();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.strokeStyle = '#2c3e50';
+                        ctx.lineWidth = 1.5;
+                        ctx.arc(x, yMean, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+                }
+            };
+
+            if (chartBenchBox) chartBenchBox.destroy();
+            chartBenchBox = new Chart(document.getElementById('benchBoxplotChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: torneos,
+                    datasets: [{
+                        label: 'Rango Intercuartil (P25 - P75)',
+                        data: boxStatsList.map(st => [Math.round(st.q1), Math.round(st.q3)]),
+                        backgroundColor: torneos.map((t, i) => getColorTorneo(t, i).solid),
+                        borderColor: '#2c3e50',
+                        borderWidth: 1.8,
+                        barPercentage: 0.45
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const st = boxStatsList[ctx.dataIndex];
+                                    return [
+                                        `Máximo (1.5 IQR): ${formatNum(st.max)}`,
+                                        `P75 (Q3): ${formatNum(st.q3)}`,
+                                        `Mediana (P50): ${formatNum(st.med)}`,
+                                        `Promedio: ${formatNum(st.mean)}`,
+                                        `P25 (Q1): ${formatNum(st.q1)}`,
+                                        `Mínimo: ${formatNum(st.min)}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: Math.max(...boxStatsList.map(s => s.max)) * 1.08,
+                            title: { display: true, text: 'Rango de Views por Partido' }
+                        }
+                    }
+                },
+                plugins: [whiskerPlugin]
+            });
+        };
+
+        // Inicializar vista principal
+        updateDashboard();
     </script>
 </body>
 </html>
