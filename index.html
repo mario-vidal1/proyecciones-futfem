@@ -53,25 +53,17 @@
     <div class="dash-container">
         <h2 style="text-align: center; color: #2c3e50; margin-bottom: 15px;">🎯 Dashboard Proyecciones FutFem AP26</h2>
 
-        <!-- BARRA DE PESTAÑAS CON NOMBRES SOLICITADOS -->
+        <!-- BARRA DE PESTAÑAS -->
         <div class="tabs-nav">
-            <button class="tab-btn active" id="btn-tab1" onclick="switchTab(1)">Monitoreo</button>
-            <button class="tab-btn" id="btn-tab2" onclick="switchTab(2)">Comparativa vs Torneos Anteriores</button>
+            <button class="tab-btn active" id="btn-tab1" onclick="switchTab(1)">Desempeño de torneo actual</button>
+            <button class="tab-btn" id="btn-tab2" onclick="switchTab(2)">Comparativa de Torneo actual vs Torneos anteriores</button>
         </div>
 
         <!-- ========================================================= -->
-        <!-- HOJA 1: MONITOREO                                         -->
+        <!-- HOJA 1: DESEMPEÑO DE TORNEO ACTUAL                        -->
         <!-- ========================================================= -->
         <div id="tab-1" class="tab-view active">
             <div class="controls">
-                <div class="filter-group">
-                    <label><strong>Fase del Torneo:</strong></label>
-                    <select id="faseSelectTab1" onchange="updateDashboard()">
-                        <option value="Regular">Fase Regular (Jornada 1 a 17)</option>
-                        <option value="Completo" selected>Torneo con Liguilla (J1 a J18+)</option>
-                        <option value="Liguilla">Solo Liguilla (Jornada 18 en adelante)</option>
-                    </select>
-                </div>
                 <div class="filter-group">
                     <label><strong>Filtro Jornada:</strong></label>
                     <select id="jornadaSelect"><option value="Todas">Todas (Acumulado)</option></select>
@@ -156,7 +148,7 @@
                     <p>Este dashboard funciona mediante machine learning y simulaciones estocásticas que procesan el historial de los torneos:</p>
                     <ol style="padding-left: 20px;">
                         <li style="margin-bottom: 10px;"><strong>Limpieza Estricta y Orden Cronológico:</strong> Agrupación por partido único y filtro del Cuantil 98% para entrenamiento sin sesgo de picos virales.</li>
-                        <li style="margin-bottom: 10px;"><strong>Ingeniería de Variables:</strong> Categorías (AAA, AA, A, B) combinadas con ponderación aditiva de equipos de alta convocatoria (0, 1 o 2) y bandera de Liguilla (Jornada 18+).</li>
+                        <li style="margin-bottom: 10px;"><strong>Ingeniería de Variables:</strong> Categorías (AAA, AA, A, B) combinadas con ponderación aditiva de equipos de alta convocatoria (0, 1 o 2) y bandera de Liguilla (Jornada 18 a 20).</li>
                         <li style="margin-bottom: 10px;"><strong>Random Forest con Residuales OOB:</strong> 1,000 árboles evaluados con predicciones Out-Of-Bag para evitar fuga de datos.</li>
                         <li style="margin-bottom: 10px;"><strong>Rolling Forecast Dinámico en KPIs:</strong> Los KPIs superiores suman los <em>Views Reales</em> ya asegurados en partidos jugados (varianza cero) más las <em>Proyecciones y Rangos (P25-P75)</em> únicamente de los partidos pendientes por jugar. En la fila final de la tabla inferior se mantiene visible la suma de la proyección inicial estática.</li>
                     </ol>
@@ -165,7 +157,7 @@
         </div>
 
         <!-- ========================================================= -->
-        <!-- HOJA 2: COMPARATIVA VS TORNEOS ANTERIORES                 -->
+        <!-- HOJA 2: COMPARATIVA DE TORNEO ACTUAL VS TORNEOS ANTERIORES -->
         <!-- ========================================================= -->
         <div id="tab-2" class="tab-view">
             <div class="controls">
@@ -173,23 +165,14 @@
                     <label><strong>Fase a Comparar:</strong></label>
                     <select id="selectFaseBench" onchange="onFaseBenchChange()">
                         <option value="Regular" selected>Fase Regular (Jornada 1 a 17)</option>
-                        <option value="Completo">Torneo con Liguilla (J1 + J18 en adelante)</option>
-                        <option value="Liguilla">Solo Liguilla (Jornada 18 en adelante)</option>
+                        <option value="Completo">Torneo Completo (Jornada 1 a 20)</option>
+                        <option value="Liguilla">Solo Liguilla (Jornada 18 a 20)</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label><strong>Corte de Partidos (N):</strong></label>
+                    <label><strong>Partidos jugados actuales:</strong></label>
                     <input type="number" id="inputCorteN" min="1" max="120" style="width: 68px;" onchange="updateBenchmark()">
                     <span class="badge-info" id="badgeCorteInfo">Homologado al avance de AP26</span>
-                </div>
-                <div class="filter-group">
-                    <label><strong>Mix de Categorías:</strong></label>
-                    <select id="selectCatMode" onchange="updateBenchmark()">
-                        <option value="N_Count">Primeros N Partidos (# Juegos)</option>
-                        <option value="N_Pct">Primeros N Partidos (% Mix)</option>
-                        <option value="All_Count">Total de la Fase (# Juegos)</option>
-                        <option value="All_Pct">Total de la Fase (% Mix)</option>
-                    </select>
                 </div>
                 <div class="filter-group" id="groupChkJ17">
                     <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
@@ -199,9 +182,9 @@
                 </div>
             </div>
 
-            <!-- GRÁFICO 1: RENDIMIENTO PROMEDIO POR JORNADA -->
+            <!-- GRÁFICO 1: VIEWS PROMEDIO POR JORNADA -->
             <div class="card">
-                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartJornada">1. Rendimiento Promedio por Jornada</h3>
+                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartJornada">1. Views promedio por Jornada</h3>
                 <canvas id="benchJornadaChart" height="90"></canvas>
             </div>
 
@@ -210,22 +193,22 @@
                 <div class="card">
                     <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartVolumen">2. Volumen Acumulado vs. Total</h3>
                     <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
-                        Barra frontal sólida: Acumulado al Partido N | Barra trasera clara: Total de la Fase (En AP26 = Reales + Proyectados pendientes)
+                        Barra frontal sólida: Acumulado a Partidos jugados actuales | Barra trasera clara: Total de la Fase (En AP26 = Reales + Proyectados pendientes)
                     </p>
                     <canvas id="benchVolumenChart" height="165"></canvas>
                 </div>
                 <div class="card">
                     <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartCat">3. Mix de Categorías de Partidos Transmitidos</h3>
                     <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
-                        Proporción de duelos AAA, AA, A y B transmitidos por torneo
+                        Cantidad y proporción (%) de duelos AAA, AA, A y B transmitidos por torneo
                     </p>
                     <canvas id="benchCatChart" height="165"></canvas>
                 </div>
             </div>
 
-            <!-- GRÁFICO 4: ESTABILIDAD DE AUDIENCIA (BOXPLOT AL PARTIDO N) -->
+            <!-- GRÁFICO 4: ESTABILIDAD DE AUDIENCIA (BOXPLOT) -->
             <div class="card">
-                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartBoxplot">4. Estabilidad de Audiencia (Distribución al Partido N)</h3>
+                <h3 style="margin-top:0; color:#2c3e50; text-align:center;" id="titleChartBoxplot">4. Estabilidad de Audiencia</h3>
                 <p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:-8px; margin-bottom:10px;">
                     Caja: Rango Intercuartil (P25 a P75) | Línea interior: Mediana (P50) | Punto blanco: Promedio | Bigotes: Mínimo y Máximo (sin outliers extremos)
                 </p>
@@ -250,7 +233,7 @@
             else updateDashboard();
         };
 
-        // Filtro por fase (Regular: J1-17 | Completo: J1+J18+ | Liguilla: J18+)
+        // Filtro por fase para la Pestaña 2 (Regular: J1-17 | Completo: J1-20 | Liguilla: J18-20)
         function matchInFase(item, faseMode) {
             if (faseMode === 'Regular') return !item.Es_Liguilla;
             if (faseMode === 'Liguilla') return Boolean(item.Es_Liguilla);
@@ -258,7 +241,7 @@
         }
 
         // =====================================================================
-        // LÓGICA HOJA 1: MONITOREO
+        // LÓGICA HOJA 1: DESEMPEÑO DE TORNEO ACTUAL
         // =====================================================================
         let activeCat = null;
         const jornadas = [...new Set(datos.map(d => d.Jornada))];
@@ -318,11 +301,10 @@
         };
 
         function updateDashboard() {
-            const faseTab1 = document.getElementById('faseSelectTab1').value;
             const jorVal = selectJornada.value;
             const eqVal = selectEquipo.value;
 
-            let baseData = datos.filter(d => matchInFase(d, faseTab1));
+            let baseData = datos;
             if (jorVal !== "Todas") baseData = baseData.filter(d => d.Jornada == jorVal);
             if (eqVal !== "Todos") baseData = baseData.filter(d => d.Local === eqVal);
 
@@ -429,9 +411,8 @@
         selectEquipo.addEventListener('change', updateDashboard);
 
         // =====================================================================
-        // LÓGICA HOJA 2: COMPARATIVA VS TORNEOS ANTERIORES
+        // LÓGICA HOJA 2: COMPARATIVA DE TORNEO ACTUAL VS TORNEOS ANTERIORES
         // =====================================================================
-        // Orden cronológico confirmado desde el backend: CL25, AP25, CL26, AP26
         const ordenCronologicoFijo = ['CL25', 'AP25', 'CL26', 'AP26'];
         const torneosOrdenados = [...benchRaw.torneos_orden].sort((a, b) => {
             const ia = ordenCronologicoFijo.indexOf(a);
@@ -458,14 +439,12 @@
 
         const inputCorteN = document.getElementById('inputCorteN');
 
-        // Calcula el corte N sugerido según la fase seleccionada
         function getDefaultCorteN(faseMode) {
             const ap26 = benchRaw.data['AP26'];
             if (ap26 && ap26.partidos_jugados) {
                 const jugadosFase = ap26.partidos_jugados.filter(p => matchInFase(p, faseMode)).length;
                 if (jugadosFase > 0) return jugadosFase;
             }
-            // Si se elige Solo Liguilla y AP26 aún no juega Liguilla, usamos el máximo histórico de Liguilla
             const countsHist = torneosOrdenados.map(t =>
                 (benchRaw.data[t].partidos_jugados || []).filter(p => matchInFase(p, faseMode)).length
             );
@@ -516,26 +495,17 @@
 
             const faseLabelTexto = faseMode === 'Regular'
                 ? 'Fase Regular (J1 a J17)'
-                : (faseMode === 'Liguilla' ? 'Solo Liguilla (J18+)' : 'Torneo con Liguilla (J1 a J18+)');
+                : (faseMode === 'Liguilla' ? 'Solo Liguilla (J18 a J20)' : 'Torneo Completo (J1 a J20)');
 
             document.getElementById('badgeCorteInfo').textContent =
-                `Comparando primeros ${corteN} partidos (${faseLabelTexto})`;
+                `Comparando ${corteN} partidos (${faseLabelTexto})`;
 
-            // Mostrar/ocultar control J15-J17 según la fase
             document.getElementById('groupChkJ17').style.display = (faseMode === 'Regular') ? 'flex' : 'none';
 
             // -----------------------------------------------------------------
-            // 1. GRÁFICO DE RENDIMIENTO PROMEDIO POR JORNADA
+            // 1. GRÁFICO DE VIEWS PROMEDIO POR JORNADA
             // -----------------------------------------------------------------
             let maxJorRegularAP26 = 10;
-            let maxJorGlobal = 17;
-
-            torneos.forEach(t => {
-                const tObj = benchRaw.data[t];
-                const jorsT = (tObj.partidos_jugados || []).map(p => p.Jornada).filter(j => j !== null);
-                if (jorsT.length > 0) maxJorGlobal = Math.max(maxJorGlobal, ...jorsT);
-            });
-
             const ap26Data = benchRaw.data['AP26'];
             if (ap26Data) {
                 let jors = ap26Data.partidos_jugados.map(p => p.Jornada).filter(j => j !== null && j >= 1 && j <= 17);
@@ -565,18 +535,17 @@
                 }
                 labelsJornadas = Array.from({ length: limiteJor }, (_, i) => i + 1);
                 document.getElementById('titleChartJornada').textContent =
-                    `1. Rendimiento Promedio — Fase Regular (Jornada 1 a ${limiteJor})`;
+                    `1. Views promedio — Fase Regular (Jornada 1 a ${limiteJor})`;
             } else if (faseMode === 'Completo') {
-                const topeMax = Math.max(18, maxJorGlobal);
+                const topeMax = 20;
                 labelsJornadas = Array.from({ length: topeMax }, (_, i) => i + 1);
                 document.getElementById('titleChartJornada').textContent =
-                    `1. Rendimiento Promedio — Torneo con Liguilla (Jornada 1 a ${topeMax})`;
+                    `1. Views promedio — Torneo Completo (Jornada 1 a 20)`;
             } else {
-                // Solo Liguilla (Jornada 18 en adelante)
-                const topeMax = Math.max(18, maxJorGlobal);
+                const topeMax = 20;
                 labelsJornadas = Array.from({ length: topeMax - 17 }, (_, i) => i + 18);
                 document.getElementById('titleChartJornada').textContent =
-                    `1. Rendimiento Promedio — Solo Liguilla (Jornada 18 a ${topeMax})`;
+                    `1. Views promedio — Solo Liguilla (Jornada 18 a 20)`;
             }
 
             const datasetsJornada = torneos.map((t, idx) => {
@@ -625,16 +594,16 @@
                     },
                     scales: {
                         x: { title: { display: true, text: 'Número de Jornada' } },
-                        y: { title: { display: true, text: 'Promedio de Views Totales (YT+FB)' }, beginAtZero: false }
+                        y: { title: { display: true, text: 'Views promedio (YT+FB)' }, beginAtZero: false }
                     }
                 }
             });
 
             // -----------------------------------------------------------------
-            // 2. GRÁFICO DE VOLUMEN ACUMULADO (PRIMEROS N PARTIDOS VS TOTAL DE LA FASE)
+            // 2. GRÁFICO DE VOLUMEN ACUMULADO VS TOTAL DE LA FASE
             // -----------------------------------------------------------------
             document.getElementById('titleChartVolumen').textContent =
-                `2. Volumen Acumulado (Primeros ${corteN} Partidos vs. Total ${faseLabelTexto})`;
+                `2. Volumen Acumulado (${corteN} Partidos jugados actuales vs. Total ${faseLabelTexto})`;
 
             const acumuladosN = [];
             const totalesFase = [];
@@ -650,7 +619,6 @@
                 const primerosN = jugadosFase.slice(0, corteN);
                 const sumN = primerosN.reduce((acc, p) => acc + p.Views, 0);
 
-                // Total de la fase (En torneos pasados = total real de la fase; en AP26 = Real + Proyección pendiente de la fase)
                 const calendarioFase = (tObj.partidos_totales_calendario || []).filter(p => matchInFase(p, faseMode));
                 const sumTotalFase = calendarioFase.reduce((acc, p) => acc + p.Views, 0);
 
@@ -711,7 +679,7 @@
                             categoryPercentage: 0.8
                         },
                         {
-                            label: `Acumulado Primeros ${corteN} Partidos`,
+                            label: `Acumulado (${corteN} Partidos jugados actuales)`,
                             data: acumuladosN,
                             backgroundColor: bgSolid,
                             borderColor: borderColors,
@@ -743,13 +711,8 @@
             // -----------------------------------------------------------------
             // 3. GRÁFICO APILADO DE CATEGORÍAS DE PARTIDOS TRANSMITIDOS
             // -----------------------------------------------------------------
-            const catMode = document.getElementById('selectCatMode').value;
-            const useAllMatches = catMode.startsWith('All');
-            const usePct = catMode.endsWith('Pct');
-
-            document.getElementById('titleChartCat').textContent = useAllMatches
-                ? `3. Mix de Categorías (${faseLabelTexto} Completo)`
-                : `3. Mix de Categorías (Primeros ${corteN} Partidos — ${faseLabelTexto})`;
+            document.getElementById('titleChartCat').textContent =
+                `3. Mix de Categorías (${corteN} Partidos jugados actuales — ${faseLabelTexto})`;
 
             const categoriasOrden = ['AAA', 'AA', 'A', 'B'];
             const catPalette = {
@@ -764,9 +727,7 @@
 
             torneos.forEach(t => {
                 const tObj = benchRaw.data[t];
-                const rawList = useAllMatches
-                    ? (tObj.partidos_totales_calendario || []).filter(p => matchInFase(p, faseMode))
-                    : (tObj.partidos_jugados || []).filter(p => matchInFase(p, faseMode)).slice(0, corteN);
+                const rawList = (tObj.partidos_jugados || []).filter(p => matchInFase(p, faseMode)).slice(0, corteN);
                 const tot = rawList.length || 1;
                 categoriasOrden.forEach(cat => {
                     const c = rawList.filter(p => p.Categoria === cat).length;
@@ -793,8 +754,7 @@
                             ctx.fillStyle = catPalette[catKey].text;
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            const labelTxt = usePct ? `${pctVal}% (${countVal})` : `${countVal}`;
-                            ctx.fillText(labelTxt, bar.x, (bar.y + bar.base) / 2);
+                            ctx.fillText(`${countVal} (${pctVal}%)`, bar.x, (bar.y + bar.base) / 2);
                         });
                     });
                     ctx.restore();
@@ -808,7 +768,7 @@
                     labels: torneos,
                     datasets: categoriasOrden.map(cat => ({
                         label: cat,
-                        data: usePct ? pctMatrix[cat] : countsMatrix[cat],
+                        data: countsMatrix[cat],
                         backgroundColor: catPalette[cat].bg,
                         borderColor: catPalette[cat].border,
                         borderWidth: 1.5
@@ -833,8 +793,7 @@
                         y: {
                             stacked: true,
                             beginAtZero: true,
-                            max: usePct ? 100 : undefined,
-                            title: { display: true, text: usePct ? '% de Partidos' : 'Cantidad de Partidos' }
+                            title: { display: true, text: 'Cantidad de Partidos' }
                         }
                     }
                 },
@@ -842,10 +801,10 @@
             });
 
             // -----------------------------------------------------------------
-            // 4. GRÁFICO DE ESTABILIDAD DE AUDIENCIA (BOXPLOT AL PARTIDO N)
+            // 4. GRÁFICO DE ESTABILIDAD DE AUDIENCIA (BOXPLOT)
             // -----------------------------------------------------------------
             document.getElementById('titleChartBoxplot').textContent =
-                `4. Estabilidad de Audiencia (Primeros ${corteN} Partidos — ${faseLabelTexto})`;
+                `4. Estabilidad de Audiencia (${corteN} Partidos jugados actuales — ${faseLabelTexto})`;
 
             const boxStatsList = torneos.map(t => {
                 const jugadosFase = (benchRaw.data[t].partidos_jugados || []).filter(p => matchInFase(p, faseMode));
